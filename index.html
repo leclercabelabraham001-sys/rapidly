@@ -7,9 +7,9 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@19.4.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@19.4.0/dist/leaflet.js"></script>
+    <!-- Leaflet CSS & JS pour la carte -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         tailwind.config = {
@@ -81,6 +81,18 @@
         <div class="relative w-full flex-1">
             <div id="map"></div>
 
+            <!-- Badge info distance trajet dynamique -->
+            <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-rapidlyDark/95 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-xs justify-between items-center text-white shadow-2xl">
+                <div class="flex items-center gap-2 truncate">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0"></span>
+                    <span id="routeBadgeText" class="truncate font-semibold text-gray-200">Trajet calculé</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="routeDistanceText" class="font-extrabold text-[#E50914] bg-white/10 px-2 py-0.5 rounded">0 km</span>
+                    <span id="routeTimeText" class="text-gray-400 text-[11px]">0 min</span>
+                </div>
+            </div>
+
             <!-- Bouton Recentrer GPS -->
             <button onclick="recenterMap()" class="absolute right-4 bottom-72 z-20 w-11 h-11 bg-rapidlyDark/90 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-white shadow-2xl active:scale-95 transition">
                 <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -98,7 +110,7 @@
                     <div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
                     <div>
                         <span class="text-sm font-extrabold text-white block">Où allez-vous ?</span>
-                        <span class="text-xs text-gray-400">Rechercher une destination à Dakar...</span>
+                        <span class="text-xs text-gray-400">Tapez une adresse à Dakar (Fann, Yoff, Plateau...)</span>
                     </div>
                 </div>
                 <div class="bg-rapidlyBorder p-2 rounded-xl">
@@ -147,19 +159,19 @@
 
             <!-- Destinations fréquentes -->
             <div class="space-y-2">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Destinations fréquentes</span>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Trajets populaires (Prix automatiques)</span>
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <button onclick="quickSelectDestination('Dakar Plateau, Centre-Ville')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
-                        📍 Plateau
+                    <button onclick="quickSelectDestination('Fann Résidence', 'Yoff Océan')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                        📍 Fann ➔ Yoff
                     </button>
-                    <button onclick="quickSelectDestination('Les Almadies, Zone des Almadies')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
-                        📍 Almadies
+                    <button onclick="quickSelectDestination('Mermoz Pyrotechnie', 'Dakar Plateau')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                        📍 Mermoz ➔ Plateau
                     </button>
-                    <button onclick="quickSelectDestination('Aéroport AIBD, Diass')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
-                        ✈️ Aéroport AIBD
+                    <button onclick="quickSelectDestination('Les Almadies', 'Aéroport AIBD')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                        ✈️ Almadies ➔ AIBD
                     </button>
-                    <button onclick="quickSelectDestination('Gare Routière, Thiès')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
-                        📍 Thiès
+                    <button onclick="quickSelectDestination('Dakar Centre', 'Thiès Gare')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                        📍 Dakar ➔ Thiès
                     </button>
                 </div>
             </div>
@@ -184,7 +196,7 @@
                     <span class="w-3 h-3 rounded-full bg-green-500 shrink-0"></span>
                     <div class="flex-1">
                         <label class="text-[9px] text-gray-400 uppercase font-bold block">Point de Départ</label>
-                        <input type="text" id="orderDepartInput" value="Mermoz Pyrotechnie, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
+                        <input type="text" id="orderDepartInput" oninput="calculateFareFromInputs()" value="Fann Résidence, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
                     </div>
                 </div>
                 <div class="border-t border-white/5"></div>
@@ -192,22 +204,22 @@
                     <span class="w-3 h-3 rounded-full bg-rapidlyRed shrink-0"></span>
                     <div class="flex-1">
                         <label class="text-[9px] text-gray-400 uppercase font-bold block">Destination</label>
-                        <input type="text" id="orderDestInput" placeholder="Où souhaitez-vous aller ?" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
+                        <input type="text" id="orderDestInput" oninput="calculateFareFromInputs()" value="Yoff Océan, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
                     </div>
                 </div>
             </div>
 
-            <!-- Marchandage FCFA -->
+            <!-- Marchandage FCFA & Calculateur Dynamique -->
             <div class="bg-rapidlyCard p-4 rounded-2xl border border-rapidlyBorder flex flex-col gap-3">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Proposez votre tarif</span>
-                    <span id="suggestedPriceTag" class="text-xs bg-rapidlyRed/20 text-rapidlyRed px-2 py-0.5 rounded-full font-bold">Conseillé: 3 500 F</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tarif calculé au km</span>
+                    <span id="suggestedPriceTag" class="text-xs bg-rapidlyRed/20 text-rapidlyRed px-2.5 py-1 rounded-full font-bold">Conseillé: 2 800 F</span>
                 </div>
 
                 <div class="flex items-center justify-between gap-3">
                     <button onclick="adjustPrice(-200)" class="w-11 h-11 bg-rapidlyBorder hover:bg-white/20 rounded-xl font-black text-xl flex items-center justify-center text-white">-</button>
                     <div class="text-center">
-                        <span id="priceVal" class="text-3xl font-black text-white">3500</span>
+                        <span id="priceVal" class="text-3xl font-black text-white">2800</span>
                         <span class="text-xs text-gray-400 block font-bold">FCFA</span>
                     </div>
                     <button onclick="adjustPrice(200)" class="w-11 h-11 bg-rapidlyBorder hover:bg-white/20 rounded-xl font-black text-xl flex items-center justify-center text-white">+</button>
@@ -241,14 +253,14 @@
             <div class="bg-rapidlyCard p-4 rounded-2xl border border-rapidlyBorder space-y-3">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h5 class="font-bold text-sm text-white">Abdoulaye S.</h5>
-                        <p class="text-xs text-gray-400">Mermoz Pyrotechnie &rarr; Almadies</p>
+                        <h5 class="font-bold text-sm text-white">Moussa S.</h5>
+                        <p class="text-xs text-gray-400">Fann Résidence &rarr; Yoff Océan</p>
                     </div>
-                    <span class="text-xs font-bold bg-white/10 px-2 py-0.5 rounded text-gray-300">3.2 km</span>
+                    <span class="text-xs font-bold bg-white/10 px-2 py-0.5 rounded text-gray-300">10.8 km</span>
                 </div>
                 <div class="flex justify-between items-center bg-rapidlyDark p-2.5 rounded-xl border border-white/5">
-                    <span class="text-xs text-gray-400">Offre Client: <strong class="text-rapidlyRed text-sm">3 000 FCFA</strong></span>
-                    <span class="text-xs text-green-400 font-bold">Gain Net: 2 460 F</span>
+                    <span class="text-xs text-gray-400">Offre Client: <strong class="text-rapidlyRed text-sm">2 800 FCFA</strong></span>
+                    <span class="text-xs text-green-400 font-bold">Gain Net: 2 296 F</span>
                 </div>
                 <button onclick="alert('Course acceptée ! Se rendre au point de départ.')" class="w-full bg-rapidlyRed hover:bg-red-700 text-white text-xs py-3 rounded-xl font-extrabold uppercase">
                     Accepter la course
@@ -261,9 +273,20 @@
     <script>
         let map;
         let userRole = 'passager';
-        let currentPrice = 3500;
+        let currentPrice = 2800;
         let selectedService = 'ville';
         let userMarker, destMarker, routeLine;
+
+        // Base de données GPS simplifiée de Dakar pour le calcul exact des distances et tarifs
+        const DAKAR_GPS = {
+            'fann': { lat: 14.6890, lng: -17.4660, name: 'Fann Résidence' },
+            'yoff': { lat: 14.7610, lng: -17.4650, name: 'Yoff Océan' },
+            'mermoz': { lat: 14.7088, lng: -17.4741, name: 'Mermoz Pyrotechnie' },
+            'plateau': { lat: 14.6680, lng: -17.4350, name: 'Dakar Plateau' },
+            'almadies': { lat: 14.7450, lng: -17.5180, name: 'Les Almadies' },
+            'aibd': { lat: 14.6700, lng: -17.0700, name: 'Aéroport AIBD' },
+            'thies': { lat: 14.7900, lng: -16.9200, name: 'Thiès Gare' }
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
@@ -273,14 +296,14 @@
             const dakarCenter = [14.7088, -17.4741];
 
             if (typeof L !== 'undefined') {
+                // Utilisation des tuiles standard OpenStreetMap / CartoDB sécurisées
                 map = L.map('map', {
                     zoomControl: false,
                     attributionControl: false
                 }).setView(dakarCenter, 13);
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    maxZoom: 19,
-                    subdomains: 'abcd'
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
                 }).addTo(map);
 
                 const userIcon = L.divIcon({
@@ -288,7 +311,9 @@
                 });
                 userMarker = L.marker(dakarCenter, { icon: userIcon }).addTo(map);
 
-                setTimeout(() => { map.invalidateSize(); }, 300);
+                // Invalidation forcée pour éviter l'écran noir
+                setTimeout(() => { map.invalidateSize(); }, 200);
+                setTimeout(() => { map.invalidateSize(); }, 800);
             }
         }
 
@@ -298,30 +323,67 @@
             }
         }
 
+        // CALCUL DE PRIX AU KILOMÈTRE RÉEL (STYLE YANGO)
+        function calculateFareFromInputs() {
+            const depText = document.getElementById('orderDepartInput').value.toLowerCase();
+            const destText = document.getElementById('orderDestInput').value.toLowerCase();
+
+            let p1 = DAKAR_GPS['fann'];
+            let p2 = DAKAR_GPS['yoff'];
+
+            if (depText.includes('mermoz')) p1 = DAKAR_GPS['mermoz'];
+            if (depText.includes('almadies')) p1 = DAKAR_GPS['almadies'];
+            if (depText.includes('plateau')) p1 = DAKAR_GPS['plateau'];
+
+            if (destText.includes('plateau')) p2 = DAKAR_GPS['plateau'];
+            if (destText.includes('yoff')) p2 = DAKAR_GPS['yoff'];
+            if (destText.includes('aibd')) p2 = DAKAR_GPS['aibd'];
+            if (destText.includes('thies')) p2 = DAKAR_GPS['thies'];
+
+            // Formule de distance Haversine
+            const R = 6371; // Rayon de la terre en km
+            const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+            const dLon = (p2.lng - p1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distKm = (R * c).toFixed(1);
+
+            let basePrice = 1000;
+            let kmRate = 200; // 200 FCFA / km
+
+            if (selectedService === 'livraison') kmRate = 120;
+            else if (selectedService === 'regions') kmRate = 400;
+            else if (selectedService === 'fret') kmRate = 1200;
+
+            let calculated = Math.round((basePrice + distKm * kmRate) / 100) * 100;
+            calculated = Math.max(1000, calculated);
+
+            currentPrice = calculated;
+            document.getElementById('priceVal').innerText = currentPrice;
+            document.getElementById('suggestedPriceTag').innerText = `Conseillé: ${currentPrice.toLocaleString('fr-FR')} F`;
+
+            // Mettre à jour l'affichage sur la carte
+            drawRouteOnMap([p1.lat, p1.lng], [p2.lat, p2.lng], distKm, p1.name, p2.name);
+        }
+
         function openOrderModal(serviceType) {
             selectedService = serviceType;
             const titles = {
-                'ville': 'VTC Ville (Prix négociable)',
+                'ville': 'VTC Ville (Prix calculé au km)',
                 'livraison': 'Livraison Express Colis',
                 'regions': 'Liaison Interurbaine Régions',
                 'fret': 'Transport Fret & Camion'
             };
-            const prices = {
-                'ville': 3500,
-                'livraison': 2000,
-                'regions': 15000,
-                'fret': 35000
-            };
 
-            currentPrice = prices[serviceType] || 3500;
             document.getElementById('orderServiceTitle').innerText = titles[serviceType] || 'Commander une course';
-            document.getElementById('priceVal').innerText = currentPrice;
-            document.getElementById('suggestedPriceTag').innerText = `Conseillé: ${currentPrice.toLocaleString('fr-FR')} F`;
 
             document.getElementById('homeSheet').classList.add('hidden');
             document.getElementById('orderSheet').classList.remove('hidden');
             document.getElementById('orderSheet').classList.add('flex');
             
+            calculateFareFromInputs();
             if (map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
@@ -329,15 +391,16 @@
             document.getElementById('orderSheet').classList.add('hidden');
             document.getElementById('orderSheet').classList.remove('flex');
             document.getElementById('homeSheet').classList.remove('hidden');
+            document.getElementById('mapRouteBadge').classList.add('hidden');
             if (routeLine && map) map.removeLayer(routeLine);
             if (destMarker && map) map.removeLayer(destMarker);
             if (map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
-        function quickSelectDestination(destName) {
+        function quickSelectDestination(depName, destName) {
+            document.getElementById('orderDepartInput').value = depName;
             document.getElementById('orderDestInput').value = destName;
             openOrderModal('ville');
-            drawDemoRoute();
         }
 
         function adjustPrice(amt) {
@@ -345,35 +408,41 @@
             document.getElementById('priceVal').innerText = currentPrice;
         }
 
-        function drawDemoRoute() {
+        function drawRouteOnMap(startCoords, endCoords, distKm, depName, destName) {
             if (!map) return;
-            const start = [14.7088, -17.4741];
-            const end = [14.6928, -17.4467];
 
+            if (userMarker) map.removeLayer(userMarker);
             if (destMarker) map.removeLayer(destMarker);
             if (routeLine) map.removeLayer(routeLine);
+
+            const startIcon = L.divIcon({
+                html: '<div style="background:#22C55E; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(34,197,94,0.8);"></div>'
+            });
+            userMarker = L.marker(startCoords, { icon: startIcon }).addTo(map);
 
             const destIcon = L.divIcon({
                 html: '<div style="background:#E50914; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(229,9,20,0.9);"></div>'
             });
-            destMarker = L.marker(end, { icon: destIcon }).addTo(map);
+            destMarker = L.marker(endCoords, { icon: destIcon }).addTo(map);
 
-            routeLine = L.polyline([start, [14.7000, -17.4600], end], {
+            routeLine = L.polyline([startCoords, endCoords], {
                 color: '#E50914',
                 weight: 5,
                 dashArray: '6, 6'
             }).addTo(map);
 
-            map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+            // Afficher le bandeau d'info trajet sur la carte
+            const badge = document.getElementById('mapRouteBadge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+            document.getElementById('routeBadgeText').innerText = `${depName} ➔ ${destName}`;
+            document.getElementById('routeDistanceText').innerText = `${distKm} km`;
+            document.getElementById('routeTimeText').innerText = `${Math.round(distKm * 2.5)} min`;
         }
 
         function launchSearch() {
-            const dest = document.getElementById('orderDestInput').value;
-            if (!dest) {
-                alert('Veuillez entrer une destination.');
-                return;
-            }
-            drawDemoRoute();
             const btn = document.getElementById('confirmOrderBtn');
             btn.innerText = "Négociation avec les chauffeurs...";
             btn.style.opacity = "0.7";
@@ -381,7 +450,7 @@
             setTimeout(() => {
                 btn.innerText = "Confirmer & Négocier";
                 btn.style.opacity = "1";
-                alert(`Offre de ${currentPrice} FCFA transmise ! 2 chauffeurs à proximité examinent votre proposition.`);
+                alert(`Offre calculée de ${currentPrice} FCFA transmise ! 2 chauffeurs proches examinent votre proposition.`);
             }, 1500);
         }
 
