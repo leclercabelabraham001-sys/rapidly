@@ -17,9 +17,12 @@
                 extend: {
                     colors: {
                         rapidlyRed: '#E50914',
-                        rapidlyDark: '#0A0A0A',
-                        rapidlyCard: '#161616',
-                        rapidlyBorder: '#262626'
+                        rapidlyRedDark: '#C00711',
+                        rapidlyBg: '#F8F9FA',
+                        rapidlyCard: '#FFFFFF',
+                        rapidlyBorder: '#E5E7EB',
+                        rapidlyText: '#111827',
+                        rapidlySubtext: '#6B7280'
                     }
                 }
             }
@@ -28,8 +31,8 @@
     
     <style>
         body {
-            background-color: #0A0A0A;
-            color: #FFFFFF;
+            background-color: #F8F9FA;
+            color: #111827;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             touch-action: manipulation;
             user-select: none;
@@ -38,7 +41,7 @@
         #map {
             width: 100%;
             height: 100%;
-            background-color: #0A0A0A;
+            background-color: #E5E7EB;
             z-index: 1;
         }
         .leaflet-control-zoom, .leaflet-control-attribution {
@@ -46,223 +49,231 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Ombres douces style iOS / Yango */
+        .shadow-yango {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .shadow-card {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
-<body class="bg-rapidlyDark text-white antialiased">
+<body class="bg-gray-100 text-gray-900 antialiased">
 
-    <div class="max-w-md mx-auto h-screen bg-rapidlyDark flex flex-col relative shadow-2xl overflow-hidden border-x border-rapidlyBorder">
+    <div class="max-w-md mx-auto h-screen bg-gray-100 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
         
-        <!-- HEADER EN-TÊTE FIXE (STYLE YANGO) -->
+        <!-- HEADER EN-TÊTE BLANC ÉPURÉ -->
         <header class="absolute top-0 left-0 right-0 p-4 z-30 flex justify-between items-center pointer-events-none">
-            <!-- Menu Burger -->
-            <button onclick="alert('Menu RAPIDLY : Historique, Paiements Wave/OM, Support 24/7')" class="pointer-events-auto w-11 h-11 bg-rapidlyDark/90 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center shadow-2xl active:scale-95 transition">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <!-- Menu Burger Blanc -->
+            <button onclick="alert('Menu RAPIDLY : Historique des courses, Paiements (Wave, Orange Money), Aide & Support 24/7')" class="pointer-events-auto w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center shadow-yango active:scale-95 transition">
+                <svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
-            <!-- Logo Badge -->
-            <div class="pointer-events-auto flex items-center gap-2 bg-rapidlyDark/90 backdrop-blur-md p-1.5 px-3 rounded-2xl border border-white/10 shadow-2xl">
-                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shrink-0">
+            <!-- Logo Badge Blanc avec R Rouge RAPIDLY -->
+            <div class="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-md p-1.5 px-3.5 rounded-2xl border border-gray-200 shadow-yango">
+                <div class="w-7 h-7 rounded-lg bg-rapidlyRed flex items-center justify-center p-1 shrink-0 shadow-sm">
                     <svg viewBox="0 0 100 100" class="w-full h-full">
-                        <path d="M 22,12 L 58,12 C 78,12 88,23 88,38 C 88,50 78,60 62,61 L 88,88 L 66,88 L 44,62 L 40,62 L 40,88 L 22,88 Z M 40,30 L 40,46 L 55,46 C 64,46 70,42 70,38 C 70,33 64,30 55,30 Z" fill="#E50914" />
+                        <path d="M 22,12 L 58,12 C 78,12 88,23 88,38 C 88,50 78,60 62,61 L 88,88 L 66,88 L 44,62 L 40,62 L 40,88 L 22,88 Z M 40,30 L 40,46 L 55,46 C 64,46 70,42 70,38 C 70,33 64,30 55,30 Z" fill="#FFFFFF" />
                     </svg>
                 </div>
-                <span class="font-extrabold text-sm tracking-wide">RAPIDLY</span>
-                <span class="bg-rapidlyRed text-[9px] px-1.5 py-0.5 rounded font-black">SN</span>
+                <span class="font-black text-sm tracking-tight text-gray-900">RAPIDLY</span>
+                <span class="bg-rapidlyRed/10 text-rapidlyRed text-[9px] px-1.5 py-0.5 rounded font-black">SN</span>
             </div>
 
-            <!-- Bouton Switch Mode -->
-            <button id="modeToggleBtn" onclick="toggleUserRole()" class="pointer-events-auto bg-rapidlyRed hover:bg-red-700 active:scale-95 text-white text-xs px-3 py-2.5 rounded-2xl font-bold shadow-xl shadow-rapidlyRed/30 transition flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                <span id="modeBtnText">Conducteur</span>
+            <!-- Bouton Mode Conducteur -->
+            <button id="modeToggleBtn" onclick="toggleUserRole()" class="pointer-events-auto bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-95 text-white text-xs px-3.5 py-2.5 rounded-2xl font-bold shadow-yango transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <span id="modeBtnText">Mode Chauffeur</span>
             </button>
         </header>
 
-        <!-- CARTE PLEIN ÉCRAN INTERACTIVE -->
+        <!-- CARTE CLAIRE STYLE YANGO (OPENSTREETMAP HD) -->
         <div class="relative w-full flex-1">
             <div id="map"></div>
 
-            <!-- Badge info distance trajet dynamique -->
-            <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-rapidlyDark/95 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-xs justify-between items-center text-white shadow-2xl">
-                <div class="flex items-center gap-2 truncate">
-                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0"></span>
-                    <span id="routeBadgeText" class="truncate font-semibold text-gray-200">Trajet calculé</span>
+            <!-- BANDEAU D'INFORMATION TRAJET DYNAMIQUE SUR LA CARTE -->
+            <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200 justify-between items-center text-gray-900 shadow-yango transition-all">
+                <div class="flex items-center gap-2.5 truncate">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Fann ➔ Yoff</span>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <span id="routeDistanceText" class="font-extrabold text-[#E50914] bg-white/10 px-2 py-0.5 rounded">0 km</span>
-                    <span id="routeTimeText" class="text-gray-400 text-[11px]">0 min</span>
+                    <span id="routeDistanceText" class="font-extrabold text-xs text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full">10.8 km</span>
+                    <span id="routeTimeText" class="text-gray-500 font-semibold text-[11px]">27 min</span>
                 </div>
             </div>
 
-            <!-- Bouton Recentrer GPS -->
-            <button onclick="recenterMap()" class="absolute right-4 bottom-72 z-20 w-11 h-11 bg-rapidlyDark/90 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-white shadow-2xl active:scale-95 transition">
-                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <!-- Bouton Recentrer GPS Blanc -->
+            <button onclick="recenterMap()" class="absolute right-4 bottom-80 z-20 w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-yango active:scale-95 transition">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </button>
         </div>
 
-        <!-- PAGE D'ACCUEIL (STYLE YANGO) -->
-        <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-rapidlyDark border-t border-rapidlyBorder rounded-t-3xl p-5 flex flex-col gap-4 shadow-2xl">
-            <!-- Poignée -->
-            <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto -mt-1 mb-1"></div>
+        <!-- FENÊTRE D'ACCUEIL FLOTTANTE (STYLE YANGO BLANC) -->
+        <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl p-5 flex flex-col gap-4 shadow-yango border-t border-gray-200">
+            <!-- Poignée tactile -->
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-1 mb-1"></div>
 
-            <!-- Barre de Recherche "Où allez-vous ?" -->
-            <div onclick="openOrderModal('ville')" class="bg-rapidlyCard hover:bg-zinc-900 border border-rapidlyBorder p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-lg">
+            <!-- BARRE DE RECHERCHE PRINCIPALE "OÙ ALLEZ-VOUS ?" -->
+            <div onclick="openOrderModal('ville')" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-card">
                 <div class="flex items-center gap-3.5">
                     <div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
                     <div>
-                        <span class="text-sm font-extrabold text-white block">Où allez-vous ?</span>
-                        <span class="text-xs text-gray-400">Tapez une adresse à Dakar (Fann, Yoff, Plateau...)</span>
+                        <span class="text-sm font-extrabold text-gray-900 block">Où allez-vous ?</span>
+                        <span class="text-xs text-gray-500 font-medium">Tapez une destination (Plateau, Almadies, Fann...)</span>
                     </div>
                 </div>
-                <div class="bg-rapidlyBorder p-2 rounded-xl">
-                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                    <svg class="w-4 h-4 text-rapidlyRed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
             </div>
 
-            <!-- GRILLE DES SERVICES 4-EN-1 -->
+            <!-- GRILLE DES 4 SERVICES PRINCIPAUX (DESIGN YANGO) -->
             <div class="grid grid-cols-4 gap-2.5">
                 <!-- VTC Ville -->
-                <div onclick="openOrderModal('ville')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-rapidlyRed/50 p-3 rounded-2xl flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition text-center group">
+                <div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 hover:border-rapidlyRed/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-rapidlyRed/10 text-rapidlyRed group-hover:bg-rapidlyRed group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
                     </div>
-                    <span class="text-xs font-bold text-gray-200">Ville</span>
-                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Dakar</span>
+                    <span class="text-xs font-bold text-gray-900">Ville</span>
+                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Négocié</span>
                 </div>
 
-                <!-- Livraison -->
-                <div onclick="openOrderModal('livraison')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-rapidlyRed/50 p-3 rounded-2xl flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition text-center group">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition flex items-center justify-center">
+                <!-- Livraison Express -->
+                <div onclick="openOrderModal('livraison')" class="bg-gray-50 border border-gray-200 hover:border-amber-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     </div>
-                    <span class="text-xs font-bold text-gray-200">Livraison</span>
-                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">Express</span>
+                    <span class="text-xs font-bold text-gray-900">Livraison</span>
+                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">Colis Moto</span>
                 </div>
 
                 <!-- Régions -->
-                <div onclick="openOrderModal('regions')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-rapidlyRed/50 p-3 rounded-2xl flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition text-center group">
-                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition flex items-center justify-center">
+                <div onclick="openOrderModal('regions')" class="bg-gray-50 border border-gray-200 hover:border-blue-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                     </div>
-                    <span class="text-xs font-bold text-gray-200">Régions</span>
+                    <span class="text-xs font-bold text-gray-900">Régions</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">Interurbain</span>
                 </div>
 
                 <!-- Fret -->
-                <div onclick="openOrderModal('fret')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-rapidlyRed/50 p-3 rounded-2xl flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition text-center group">
-                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition flex items-center justify-center">
+                <div onclick="openOrderModal('fret')" class="bg-gray-50 border border-gray-200 hover:border-purple-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8"/></svg>
                     </div>
-                    <span class="text-xs font-bold text-gray-200">Fret</span>
+                    <span class="text-xs font-bold text-gray-900">Fret</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">Camion</span>
                 </div>
             </div>
 
-            <!-- Destinations fréquentes -->
-            <div class="space-y-2">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Trajets populaires (Prix automatiques)</span>
+            <!-- Destinations populaires -->
+            <div class="space-y-2 pt-1">
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Destinations fréquentes</span>
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <button onclick="quickSelectDestination('Fann Résidence', 'Yoff Océan')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                    <button onclick="quickSelectDestination('Fann Résidence', 'Yoff Océan')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 flex items-center gap-1.5 shadow-sm">
                         📍 Fann ➔ Yoff
                     </button>
-                    <button onclick="quickSelectDestination('Mermoz Pyrotechnie', 'Dakar Plateau')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                    <button onclick="quickSelectDestination('Mermoz Pyrotechnie', 'Dakar Plateau')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 flex items-center gap-1.5 shadow-sm">
                         📍 Mermoz ➔ Plateau
                     </button>
-                    <button onclick="quickSelectDestination('Les Almadies', 'Aéroport AIBD')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                    <button onclick="quickSelectDestination('Les Almadies', 'Aéroport AIBD')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 flex items-center gap-1.5 shadow-sm">
                         ✈️ Almadies ➔ AIBD
                     </button>
-                    <button onclick="quickSelectDestination('Dakar Centre', 'Thiès Gare')" class="bg-rapidlyCard border border-rapidlyBorder hover:border-white/20 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 shrink-0 flex items-center gap-2">
+                    <button onclick="quickSelectDestination('Dakar Centre', 'Thiès Gare')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 flex items-center gap-1.5 shadow-sm">
                         📍 Dakar ➔ Thiès
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- FENÊTRE DE COMMANDE & NÉGOCIATION -->
-        <div id="orderSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-rapidlyDark border-t border-rapidlyBorder rounded-t-3xl p-5 flex-col gap-4 shadow-2xl">
+        <!-- FENÊTRE DE COMMANDE & NÉGOCIATION (MODE BLANC ÉPURÉ) -->
+        <div id="orderSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-4 shadow-yango border-t border-gray-200">
             
-            <div class="flex justify-between items-center border-b border-rapidlyBorder pb-3">
-                <div class="flex items-center gap-2">
-                    <button onclick="closeOrderModal()" class="p-1.5 rounded-xl bg-rapidlyBorder text-gray-300 hover:text-white">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="closeOrderModal()" class="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     </button>
-                    <h3 id="orderServiceTitle" class="font-extrabold text-base text-white">Commander une course</h3>
+                    <h3 id="orderServiceTitle" class="font-black text-base text-gray-900">Commander une course</h3>
                 </div>
-                <span class="text-xs bg-rapidlyRed/20 text-rapidlyRed px-2.5 py-1 rounded-full font-bold">18% Commission</span>
+                <span class="text-xs bg-rapidlyRed/10 text-rapidlyRed px-3 py-1 rounded-full font-extrabold">18% Commission</span>
             </div>
 
             <!-- Adresses -->
-            <div class="bg-rapidlyCard p-3.5 rounded-2xl border border-rapidlyBorder space-y-3">
+            <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 space-y-3">
                 <div class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0 ring-4 ring-emerald-500/20"></span>
                     <div class="flex-1">
-                        <label class="text-[9px] text-gray-400 uppercase font-bold block">Point de Départ</label>
-                        <input type="text" id="orderDepartInput" oninput="calculateFareFromInputs()" value="Fann Résidence, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
+                        <label class="text-[9px] text-gray-400 uppercase font-extrabold block">Point de Départ</label>
+                        <input type="text" id="orderDepartInput" oninput="calculateFareFromInputs()" value="Fann Résidence, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
-                <div class="border-t border-white/5"></div>
+                <div class="border-t border-gray-200/60"></div>
                 <div class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-rapidlyRed shrink-0"></span>
+                    <span class="w-3 h-3 rounded-full bg-rapidlyRed shrink-0 ring-4 ring-rapidlyRed/20"></span>
                     <div class="flex-1">
-                        <label class="text-[9px] text-gray-400 uppercase font-bold block">Destination</label>
-                        <input type="text" id="orderDestInput" oninput="calculateFareFromInputs()" value="Yoff Océan, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-white font-semibold">
+                        <label class="text-[9px] text-gray-400 uppercase font-extrabold block">Destination</label>
+                        <input type="text" id="orderDestInput" oninput="calculateFareFromInputs()" value="Yoff Océan, Dakar" class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
             </div>
 
             <!-- Marchandage FCFA & Calculateur Dynamique -->
-            <div class="bg-rapidlyCard p-4 rounded-2xl border border-rapidlyBorder flex flex-col gap-3">
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-3">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tarif calculé au km</span>
-                    <span id="suggestedPriceTag" class="text-xs bg-rapidlyRed/20 text-rapidlyRed px-2.5 py-1 rounded-full font-bold">Conseillé: 2 800 F</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tarif calculé au km</span>
+                    <span id="suggestedPriceTag" class="text-xs bg-rapidlyRed/10 text-rapidlyRed px-2.5 py-1 rounded-full font-extrabold">Conseillé: 2 800 FCFA</span>
                 </div>
 
-                <div class="flex items-center justify-between gap-3">
-                    <button onclick="adjustPrice(-200)" class="w-11 h-11 bg-rapidlyBorder hover:bg-white/20 rounded-xl font-black text-xl flex items-center justify-center text-white">-</button>
+                <div class="flex items-center justify-between gap-3 my-1">
+                    <button onclick="adjustPrice(-200)" class="w-12 h-12 bg-white hover:bg-gray-100 active:scale-95 rounded-2xl font-black text-2xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-200 transition">-</button>
                     <div class="text-center">
-                        <span id="priceVal" class="text-3xl font-black text-white">2800</span>
-                        <span class="text-xs text-gray-400 block font-bold">FCFA</span>
+                        <span id="priceVal" class="text-4xl font-black text-gray-900 tracking-tight">2800</span>
+                        <span class="text-xs text-gray-500 block font-bold">FCFA</span>
                     </div>
-                    <button onclick="adjustPrice(200)" class="w-11 h-11 bg-rapidlyBorder hover:bg-white/20 rounded-xl font-black text-xl flex items-center justify-center text-white">+</button>
+                    <button onclick="adjustPrice(200)" class="w-12 h-12 bg-white hover:bg-gray-100 active:scale-95 rounded-2xl font-black text-2xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-200 transition">+</button>
                 </div>
 
                 <div class="flex justify-center gap-2 pt-1">
-                    <button onclick="adjustPrice(200)" class="bg-rapidlyBorder/60 text-gray-300 text-xs px-3 py-1 rounded-lg font-bold">+200 F</button>
-                    <button onclick="adjustPrice(500)" class="bg-rapidlyBorder/60 text-gray-300 text-xs px-3 py-1 rounded-lg font-bold">+500 F</button>
-                    <button onclick="adjustPrice(1000)" class="bg-rapidlyBorder/60 text-gray-300 text-xs px-3 py-1 rounded-lg font-bold">+1000 F</button>
+                    <button onclick="adjustPrice(200)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded-xl font-bold shadow-sm">+200 F</button>
+                    <button onclick="adjustPrice(500)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded-xl font-bold shadow-sm">+500 F</button>
+                    <button onclick="adjustPrice(1000)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded-xl font-bold shadow-sm">+1000 F</button>
                 </div>
             </div>
 
-            <!-- Bouton -->
-            <button onclick="launchSearch()" id="confirmOrderBtn" class="w-full bg-rapidlyRed hover:bg-red-700 active:scale-98 text-white font-extrabold py-4 rounded-2xl shadow-xl shadow-rapidlyRed/30 text-sm uppercase tracking-wider transition">
+            <!-- Bouton de validation -->
+            <button onclick="launchSearch()" id="confirmOrderBtn" class="w-full bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-98 text-white font-extrabold py-4 rounded-2xl shadow-lg shadow-rapidlyRed/25 text-sm uppercase tracking-wider transition">
                 Confirmer &amp; Négocier
             </button>
         </div>
 
-        <!-- MODE CONDUCTEUR -->
-        <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-rapidlyDark border-t border-rapidlyBorder rounded-t-3xl p-5 flex-col gap-4 shadow-2xl">
-            <div class="flex justify-between items-center bg-rapidlyCard p-3.5 rounded-2xl border border-rapidlyBorder">
+        <!-- MODE CONDUCTEUR (FOND BLANC ÉPURÉ DESIGN YANGO) -->
+        <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-4 shadow-yango border-t border-gray-200">
+            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-200">
                 <div>
-                    <h4 class="font-extrabold text-sm text-white">Espace Conducteur RAPIDLY</h4>
-                    <p class="text-xs text-green-400 font-semibold">● En ligne • Commission 18% par course</p>
+                    <h4 class="font-extrabold text-sm text-gray-900">Espace Conducteur RAPIDLY</h4>
+                    <p class="text-xs text-emerald-600 font-bold mt-0.5">● En ligne • Commission 18% par course</p>
                 </div>
-                <span class="w-3 h-3 rounded-full bg-green-500 animate-ping"></span>
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
             </div>
 
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Demandes entrantes à Dakar</span>
+            <span class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Demandes entrantes à Dakar</span>
 
-            <div class="bg-rapidlyCard p-4 rounded-2xl border border-rapidlyBorder space-y-3">
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-3 shadow-sm">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h5 class="font-bold text-sm text-white">Moussa S.</h5>
-                        <p class="text-xs text-gray-400">Fann Résidence &rarr; Yoff Océan</p>
+                        <h5 class="font-bold text-sm text-gray-900">Moussa S.</h5>
+                        <p class="text-xs text-gray-500">Fann Résidence &rarr; Yoff Océan</p>
                     </div>
-                    <span class="text-xs font-bold bg-white/10 px-2 py-0.5 rounded text-gray-300">10.8 km</span>
+                    <span class="text-xs font-extrabold bg-gray-200 px-2 py-0.5 rounded-md text-gray-800">10.8 km</span>
                 </div>
-                <div class="flex justify-between items-center bg-rapidlyDark p-2.5 rounded-xl border border-white/5">
-                    <span class="text-xs text-gray-400">Offre Client: <strong class="text-rapidlyRed text-sm">2 800 FCFA</strong></span>
-                    <span class="text-xs text-green-400 font-bold">Gain Net: 2 296 F</span>
+                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <span class="text-xs text-gray-500">Offre Client: <strong class="text-rapidlyRed text-sm block">2 800 FCFA</strong></span>
+                    <span class="text-xs text-emerald-600 font-extrabold">Gain Net (-18%): 2 296 F</span>
                 </div>
-                <button onclick="alert('Course acceptée ! Se rendre au point de départ.')" class="w-full bg-rapidlyRed hover:bg-red-700 text-white text-xs py-3 rounded-xl font-extrabold uppercase">
+                <button onclick="alert('Course acceptée ! Se rendre au point de départ.')" class="w-full bg-rapidlyRed hover:bg-rapidlyRedDark text-white text-xs py-3.5 rounded-xl font-extrabold uppercase shadow-md shadow-rapidlyRed/20 transition">
                     Accepter la course
                 </button>
             </div>
@@ -296,7 +307,7 @@
             const dakarCenter = [14.7088, -17.4741];
 
             if (typeof L !== 'undefined') {
-                // Utilisation des tuiles standard OpenStreetMap / CartoDB sécurisées
+                // Utilisation des tuiles standard OpenStreetMap (Style Clair Yango)
                 map = L.map('map', {
                     zoomControl: false,
                     attributionControl: false
@@ -307,11 +318,11 @@
                 }).addTo(map);
 
                 const userIcon = L.divIcon({
-                    html: '<div style="background:#22C55E; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(34,197,94,0.8);"></div>'
+                    html: '<div style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.6);"></div>'
                 });
                 userMarker = L.marker(dakarCenter, { icon: userIcon }).addTo(map);
 
-                // Invalidation forcée pour éviter l'écran noir
+                // Invalidation forcée pour s'assurer que la carte se charge parfaitement sans écran noir
                 setTimeout(() => { map.invalidateSize(); }, 200);
                 setTimeout(() => { map.invalidateSize(); }, 800);
             }
@@ -340,8 +351,8 @@
             if (destText.includes('aibd')) p2 = DAKAR_GPS['aibd'];
             if (destText.includes('thies')) p2 = DAKAR_GPS['thies'];
 
-            // Formule de distance Haversine
-            const R = 6371; // Rayon de la terre en km
+            // Formule Haversine pour calculer la distance exacte
+            const R = 6371;
             const dLat = (p2.lat - p1.lat) * Math.PI / 180;
             const dLon = (p2.lng - p1.lng) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -351,7 +362,7 @@
             const distKm = (R * c).toFixed(1);
 
             let basePrice = 1000;
-            let kmRate = 200; // 200 FCFA / km
+            let kmRate = 200; // 200 FCFA par km pour VTC Ville
 
             if (selectedService === 'livraison') kmRate = 120;
             else if (selectedService === 'regions') kmRate = 400;
@@ -362,9 +373,9 @@
 
             currentPrice = calculated;
             document.getElementById('priceVal').innerText = currentPrice;
-            document.getElementById('suggestedPriceTag').innerText = `Conseillé: ${currentPrice.toLocaleString('fr-FR')} F`;
+            document.getElementById('suggestedPriceTag').innerText = `Conseillé: ${currentPrice.toLocaleString('fr-FR')} FCFA`;
 
-            // Mettre à jour l'affichage sur la carte
+            // Mettre à jour l'itinéraire sur la carte
             drawRouteOnMap([p1.lat, p1.lng], [p2.lat, p2.lng], distKm, p1.name, p2.name);
         }
 
@@ -416,7 +427,7 @@
             if (routeLine) map.removeLayer(routeLine);
 
             const startIcon = L.divIcon({
-                html: '<div style="background:#22C55E; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(34,197,94,0.8);"></div>'
+                html: '<div style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.8);"></div>'
             });
             userMarker = L.marker(startCoords, { icon: startIcon }).addTo(map);
 
@@ -450,7 +461,7 @@
             setTimeout(() => {
                 btn.innerText = "Confirmer & Négocier";
                 btn.style.opacity = "1";
-                alert(`Offre calculée de ${currentPrice} FCFA transmise ! 2 chauffeurs proches examinent votre proposition.`);
+                alert(`Offre de ${currentPrice} FCFA transmise ! 2 chauffeurs proches examinent votre proposition.`);
             }, 1500);
         }
 
