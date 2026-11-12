@@ -116,7 +116,7 @@
 
             <!-- GRILLE 4 SERVICES -->
             <div class="grid grid-cols-4 gap-2.5">
-                <!-- Ville (VTC Voiture) -->
+                <!-- Ville (VTC Voiture Berline) -->
                 <div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 hover:border-rapidlyRed/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-rapidlyRed/10 text-rapidlyRed group-hover:bg-rapidlyRed group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +199,6 @@
                         <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" value="Fann Résidence" placeholder="Ex: Mermoz, Parcelles, Médina..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
-                <!-- Liste suggestions Départ -->
                 <div id="departSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-36 overflow-y-auto divide-y divide-gray-100 z-50"></div>
 
                 <div class="border-t border-gray-200/70"></div>
@@ -211,7 +210,6 @@
                         <input type="text" id="orderDestInput" oninput="handleAddressInput('dest')" onfocus="handleAddressInput('dest')" placeholder="Ex: Sacré-Cœur 2, Yoff, Thiès..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
-                <!-- Liste suggestions Destination -->
                 <div id="destSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-40 overflow-y-auto divide-y divide-gray-100 z-50"></div>
             </div>
 
@@ -238,7 +236,7 @@
                 </div>
             </div>
 
-            <!-- Identité réelle du Passager (Pré-remplie si déjà enregistrée) -->
+            <!-- Identité réelle du Passager -->
             <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-[9px] text-gray-400 uppercase font-extrabold block">Votre Nom</label>
@@ -255,7 +253,7 @@
             </button>
         </div>
 
-        <!-- 3. MODE CONDUCTEUR (AFFICHE LES VRAIES COMMANDES ÉMISES SUR LA PLATEFORME) -->
+        <!-- 3. MODE CONDUCTEUR -->
         <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-4 shadow-yango border-t border-gray-200 max-h-[80vh] overflow-y-auto">
             <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-200">
                 <div>
@@ -265,9 +263,7 @@
                 <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
             </div>
 
-            <div id="driverWorkflowContainer" class="flex flex-col gap-3">
-                <!-- Rempli dynamiquement avec les vraies commandes passagers -->
-            </div>
+            <div id="driverWorkflowContainer" class="flex flex-col gap-3"></div>
         </div>
 
     </div>
@@ -280,11 +276,9 @@
         let userMarker, destMarker, routeLine;
         let selectedDepartObj = null;
         let selectedDestObj = null;
-        let activeRealOrders = []; // Stocke les vraies commandes émises par les utilisateurs
+        let activeRealOrders = [];
 
-        // BASE COMPLÈTE DES QUARTIERS DE DAKAR, BANLIEUES ET RÉGIONS DU SÉNÉGAL
         const SENEGAL_LOCATIONS = [
-            // Dakar Centre & Ouest
             { name: "Dakar Plateau, Centre-Ville", zone: "Dakar Centre", lat: 14.6680, lng: -17.4350 },
             { name: "Médina, Dakar", zone: "Dakar Centre", lat: 14.6820, lng: -17.4480 },
             { name: "Gueule Tapée - Fass - Colobane", zone: "Dakar Centre", lat: 14.6910, lng: -17.4540 },
@@ -310,8 +304,6 @@
             { name: "Grand Yoff, Dakar", zone: "Dakar Nord", lat: 14.7360, lng: -17.4490 },
             { name: "Patte d'Oie, Dakar", zone: "Dakar Nord", lat: 14.7460, lng: -17.4420 },
             { name: "Camberène, Dakar", zone: "Dakar Nord", lat: 14.7680, lng: -17.4250 },
-
-            // Banlieue & Grand Dakar
             { name: "Guédiawaye (Hamo, Golf, Wakhinane)", zone: "Banlieue", lat: 14.7780, lng: -17.4080 },
             { name: "Pikine (Icotaf, Tally Boumack)", zone: "Banlieue", lat: 14.7510, lng: -17.3950 },
             { name: "Thiaroye", zone: "Banlieue", lat: 14.7450, lng: -17.3720 },
@@ -323,8 +315,6 @@
             { name: "Diamniadio (Cité Ministérielle / CICAD)", zone: "Pôle Urbain", lat: 14.7180, lng: -17.1850 },
             { name: "Sébikotane", zone: "Rufisque", lat: 14.7450, lng: -17.1380 },
             { name: "Aéroport International AIBD, Diass", zone: "Aéroport", lat: 14.6700, lng: -17.0700 },
-
-            // Régions du Sénégal
             { name: "Thiès (Centre-Ville / Gare)", zone: "Région Thiès", lat: 14.7900, lng: -16.9200 },
             { name: "Mbour Centre", zone: "Petite Côte", lat: 14.4160, lng: -16.9600 },
             { name: "Saly Portudal", zone: "Petite Côte", lat: 14.4400, lng: -17.0200 },
@@ -384,12 +374,10 @@
             if (map && userMarker) map.setView(userMarker.getLatLng(), 14);
         }
 
-        // Normalise les accents pour la recherche (ex: "sacre coeur" trouve "Sacré-Cœur")
         function normalizeStr(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, " ");
         }
 
-        // Recherche en temps réel dans les quartiers du Sénégal + Géocodage en direct
         let geocodeTimeout = null;
         function handleAddressInput(field) {
             const inputEl = field === 'depart' ? document.getElementById('orderDepartInput') : document.getElementById('orderDestInput');
@@ -401,7 +389,6 @@
                 return;
             }
 
-            // 1. Filtrer la base locale des quartiers du Sénégal
             const matches = SENEGAL_LOCATIONS.filter(loc => normalizeStr(loc.name).includes(query) || normalizeStr(loc.zone).includes(query));
 
             sugBox.innerHTML = '';
@@ -418,12 +405,10 @@
                 });
                 sugBox.classList.remove('hidden');
 
-                // Sélection automatique immédiate du meilleur résultat pendant la frappe pour mise à jour live du tarif !
                 if (field === 'depart') selectedDepartObj = matches[0];
                 else selectedDestObj = matches[0];
                 recalculateDynamicFare();
             } else {
-                // 2. Si le lieu exact n'est pas dans la liste rapide, interroger OpenStreetMap Sénégal en direct
                 clearTimeout(geocodeTimeout);
                 geocodeTimeout = setTimeout(() => {
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=sn&q=${encodeURIComponent(inputEl.value)}&limit=3`)
@@ -468,11 +453,10 @@
             recalculateDynamicFare();
         }
 
-        // CALCUL DE DISTANCE RÉELLE (FORMULE DE HAVERSINE + COEFF ROUTE) & TARIF FCFA
         function recalculateDynamicFare() {
             if (!selectedDepartObj || !selectedDestObj) return;
 
-            const R = 6371; // Rayon Terre km
+            const R = 6371;
             const dLat = (selectedDestObj.lat - selectedDepartObj.lat) * Math.PI / 180;
             const dLon = (selectedDestObj.lng - selectedDepartObj.lng) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -480,7 +464,6 @@
                       Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             
-            // Distance routière réelle estimée (+25% par rapport au vol d'oiseau)
             const distKm = Math.max(1.2, (R * c * 1.25)).toFixed(1);
 
             let basePrice = 1000;
@@ -586,7 +569,6 @@
             document.getElementById('priceVal').innerText = currentPrice;
         }
 
-        // ÉMISSION DE LA VRAIE COMMANDE PAR LE CLIENT
         function launchSearch() {
             const depName = document.getElementById('orderDepartInput').value.trim();
             const destName = document.getElementById('orderDestInput').value.trim();
@@ -603,13 +585,11 @@
                 return;
             }
 
-            // Sauvegarde du profil utilisateur réel
             localStorage.setItem('rapidly_user_name', clientName);
             localStorage.setItem('rapidly_user_phone', clientPhone);
 
             const distText = document.getElementById('routeDistanceText').innerText || "Calculée";
 
-            // Création de la vraie commande dans le flux temps réel
             const newOrder = {
                 id: Date.now(),
                 clientName: clientName,
@@ -636,7 +616,6 @@
             }, 900);
         }
 
-        // RENDU DES VRAIES COMMANDES CÔTÉ CONDUCTEUR (AUCUN FAUX CLIENT)
         function renderDriverOrders() {
             const container = document.getElementById('driverWorkflowContainer');
             if (!container) return;
