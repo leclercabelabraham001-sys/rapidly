@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Désactivation automatique du cache pour que chaque mise à jour GitHub soit immédiate -->
+    <!-- Anti-cache strict pour déploiement instantané GitHub -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -92,7 +92,7 @@
         <div class="relative w-full flex-1">
             <div id="map"></div>
 
-            <!-- BADGE STATUT POSITION GPS -->
+            <!-- BADGE GPS -->
             <div id="gpsStatusPill" class="absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-yango transition-all">
                 <div class="flex items-center gap-2 truncate pr-2">
                     <span id="gpsDotIndicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
@@ -122,7 +122,6 @@
         <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl p-5 flex flex-col gap-4 shadow-yango border-t border-gray-200">
             <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-1"></div>
 
-            <!-- Barre "Où allez-vous ?" -->
             <div onclick="openOrderModal('ville')" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-card">
                 <div class="flex items-center gap-3.5">
                     <div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
@@ -136,21 +135,14 @@
                 </div>
             </div>
 
-            <!-- GRILLE 4 SERVICES -->
             <div class="grid grid-cols-4 gap-2.5">
                 <div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 hover:border-rapidlyRed/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-rapidlyRed/10 text-rapidlyRed group-hover:bg-rapidlyRed group-hover:text-white transition flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-                            <circle cx="7" cy="17" r="2" stroke-width="2"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6"/>
-                            <circle cx="17" cy="17" r="2" stroke-width="2"/>
-                        </svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6"/><circle cx="17" cy="17" r="2" stroke-width="2"/></svg>
                     </div>
                     <span class="text-xs font-bold text-gray-900">Ville</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Négocié</span>
                 </div>
-
                 <div onclick="openOrderModal('livraison')" class="bg-gray-50 border border-gray-200 hover:border-amber-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -158,7 +150,6 @@
                     <span class="text-xs font-bold text-gray-900">Livraison</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">Colis Moto</span>
                 </div>
-
                 <div onclick="openOrderModal('regions')" class="bg-gray-50 border border-gray-200 hover:border-blue-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
@@ -166,20 +157,15 @@
                     <span class="text-xs font-bold text-gray-900">Régions</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">Interurbain</span>
                 </div>
-
                 <div onclick="openOrderModal('fret')" class="bg-gray-50 border border-gray-200 hover:border-purple-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/>
-                        </svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
                     </div>
                     <span class="text-xs font-bold text-gray-900">Fret</span>
                     <span class="text-[9px] text-gray-500 font-semibold -mt-1">Camion</span>
                 </div>
             </div>
 
-            <!-- Destinations populaires -->
             <div class="space-y-2 pt-1">
                 <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Destinations populaires</span>
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -265,7 +251,46 @@
             </button>
         </div>
 
-        <!-- 3. MODE CONDUCTEUR -->
+        <!-- 3. ÉCRAN D'ATTENTE PASSAGER (RADAR YANGO) -->
+        <div id="passengerWaitingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200 text-center">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
+            <div class="w-16 h-16 rounded-full bg-rapidlyRed/10 text-rapidlyRed flex items-center justify-center mx-auto animate-pulse">
+                <svg class="w-8 h-8 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+            </div>
+            <div>
+                <h3 class="font-black text-lg text-gray-900">Recherche d'un chauffeur...</h3>
+                <p class="text-xs text-gray-500 mt-1">Vos offres sont transmises aux conducteurs RAPIDLY à proximité.</p>
+            </div>
+            <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left text-xs space-y-1">
+                <div class="flex justify-between"><span class="text-gray-400">Trajet :</span><strong class="text-gray-900 truncate" id="waitRouteSummary">...</strong></div>
+                <div class="flex justify-between"><span class="text-gray-400">Votre offre :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
+            </div>
+            <button onclick="cancelPassengerSearch()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl text-xs uppercase transition">
+                Annuler la recherche
+            </button>
+        </div>
+
+        <!-- 4. ÉCRAN DE SUIVI COURSE EN COURS (PASSAGER) -->
+        <div id="passengerTrackingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
+            <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl">
+                <div>
+                    <span class="text-[10px] font-black text-emerald-700 uppercase bg-emerald-200/60 px-2 py-0.5 rounded-full">Chauffeur en route</span>
+                    <h4 id="trackDriverName" class="font-black text-base text-gray-900 mt-1">Moussa Diop</h4>
+                    <p id="trackDriverCar" class="text-xs text-gray-600">Peugeot 301 • DK-4820-AP</p>
+                </div>
+                <a id="trackDriverPhoneBtn" href="tel:" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                </a>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs space-y-1.5">
+                <div class="flex justify-between"><span class="text-gray-500">Montant convenu :</span><strong id="trackPriceVal" class="text-rapidlyRed font-black text-sm">-- FCFA</strong></div>
+                <div class="flex justify-between"><span class="text-gray-500">Destination :</span><strong id="trackDestVal" class="text-gray-900">--</strong></div>
+            </div>
+            <div class="text-center text-xs text-zinc-400 font-semibold">Suivi GPS en temps réel actif sur la carte</div>
+        </div>
+
+        <!-- 5. MODE CONDUCTEUR -->
         <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-4 shadow-yango border-t border-gray-200 max-h-[80vh] overflow-y-auto">
             <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-200">
                 <div>
@@ -360,6 +385,9 @@
                             } else if (payload.type === 'ACCEPT_ORDER' && ordersMap.has(payload.orderId)) {
                                 const existing = ordersMap.get(payload.orderId);
                                 existing.status = 'accepted';
+                                existing.driverName = payload.driverName;
+                                existing.driverPhone = payload.driverPhone;
+                                existing.driverCar = payload.driverCar;
                                 existing.driverLat = payload.driverLat;
                                 existing.driverLng = payload.driverLng;
                                 ordersMap.set(payload.orderId, existing);
@@ -386,7 +414,7 @@
                 const evtSource = new EventSource(`${NTFY_BASE}/sse`);
                 evtSource.onmessage = () => { fetchNtfyHistory(); };
             } catch (e) {}
-            setInterval(fetchNtfyHistory, 3000);
+            setInterval(fetchNtfyHistory, 2500);
         }
 
         window.forceRefreshCloudOrders = function() {
@@ -446,6 +474,7 @@
         let selectedDepartObj = null;
         let selectedDestObj = null;
         let activeRealOrders = [];
+        let currentActiveOrderId = null;
         let acceptedOrderTrackingInterval = null;
 
         window.syncIncomingOrdersFromCloud = function(cloudOrders) {
@@ -455,10 +484,15 @@
             activeRealOrders = [...localPending, ...cloudOrders];
             renderDriverOrders();
 
-            // Si le passager a une course acceptée en cours, on vérifie la position du chauffeur
-            const myAcceptedOrder = activeRealOrders.find(o => o.status === 'accepted' && o.clientPhone === localStorage.getItem('rapidly_user_phone'));
-            if (myAcceptedOrder && myAcceptedOrder.driverLat && myAcceptedOrder.driverLng) {
-                updateDriverPositionOnPassengerMap(myAcceptedOrder.driverLat, myAcceptedOrder.driverLng);
+            // Vérifier si la commande en cours du passager a été acceptée
+            if (currentActiveOrderId) {
+                const orderInCloud = activeRealOrders.find(o => o.id === currentActiveOrderId);
+                if (orderInCloud && orderInCloud.status === 'accepted') {
+                    triggerPassengerTrackingView(orderInCloud);
+                } else if (!orderInCloud) {
+                    // Supprimée / Terminée
+                    resetPassengerToHome();
+                }
             }
         };
 
@@ -543,8 +577,7 @@
         function openProfileModal() {
             const name = localStorage.getItem('rapidly_user_name') || 'Non renseigné';
             const phone = localStorage.getItem('rapidly_user_phone') || 'Non renseigné';
-            const pos = currentGpsLocation ? currentGpsLocation.name : 'Détection GPS en cours';
-            alert(`Profil Utilisateur RAPIDLY :\nNom : ${name}\nTéléphone : ${phone}\nPosition GPS : ${pos}`);
+            alert(`Profil Utilisateur RAPIDLY :\nNom : ${name}\nTéléphone : ${phone}`);
         }
 
         function initMap() {
@@ -805,6 +838,7 @@
                 status: 'pending'
             };
 
+            currentActiveOrderId = newOrder.id;
             activeRealOrders.unshift(newOrder);
             renderDriverOrders();
 
@@ -812,7 +846,54 @@
                 window.publishOrderToCloud(newOrder);
             }
 
-            alert("✅ Commande diffusée ! Elle est visible sur tous les téléphones en Mode Chauffeur.");
+            // Basculer l'écran passager en mode Attente
+            document.getElementById('orderSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.remove('flex');
+            document.getElementById('passengerWaitingSheet').classList.remove('hidden');
+            document.getElementById('passengerWaitingSheet').classList.add('flex');
+            document.getElementById('waitRouteSummary').innerText = `${depName} ➔ ${destName}`;
+            document.getElementById('waitPriceSummary').innerText = `${currentPrice.toLocaleString()} FCFA`;
+        }
+
+        function cancelPassengerSearch() {
+            currentActiveOrderId = null;
+            document.getElementById('passengerWaitingSheet').classList.add('hidden');
+            document.getElementById('passengerWaitingSheet').classList.remove('flex');
+            document.getElementById('homeSheet').classList.remove('hidden');
+            if (map) setTimeout(() => { map.invalidateSize(); }, 100);
+        }
+
+        function triggerPassengerTrackingView(order) {
+            // Cacher les écrans de départ/attente et afficher le suivi du chauffeur en route
+            document.getElementById('passengerWaitingSheet').classList.add('hidden');
+            document.getElementById('passengerWaitingSheet').classList.remove('flex');
+            document.getElementById('homeSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.add('hidden');
+            document.getElementById('passengerTrackingSheet').classList.remove('hidden');
+            document.getElementById('passengerTrackingSheet').classList.add('flex');
+
+            document.getElementById('trackDriverName').innerText = order.driverName || "Chauffeur RAPIDLY";
+            document.getElementById('trackDriverCar').innerText = order.driverCar || "Véhicule VTC";
+            document.getElementById('trackDriverPhoneBtn').href = `tel:${order.driverPhone || '770000000'}`;
+            document.getElementById('trackPriceVal').innerText = `${order.price.toLocaleString()} FCFA`;
+            document.getElementById('trackDestVal').innerText = order.destination;
+
+            // Afficher le véhicule sur la carte
+            if (order.driverLat && order.driverLng) {
+                updateDriverPositionOnPassengerMap(order.driverLat, order.driverLng);
+            }
+        }
+
+        function resetPassengerToHome() {
+            currentActiveOrderId = null;
+            document.getElementById('passengerTrackingSheet').classList.add('hidden');
+            document.getElementById('passengerTrackingSheet').classList.remove('flex');
+            document.getElementById('homeSheet').classList.remove('hidden');
+            if (driverLiveMarker && map) {
+                map.removeLayer(driverLiveMarker);
+                driverLiveMarker = null;
+            }
+            if (map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
         // MISE À JOUR DE LA POSITION DU CHAUFFEUR EN TEMPS RÉEL SUR LA CARTE PASSAGER
@@ -822,17 +903,18 @@
 
             if (!driverLiveMarker) {
                 const driverIcon = L.divIcon({
-                    html: '<div style="background:#E50914; width:28px; height:28px; border-radius:50%; border:3px solid white; box-shadow:0 0 15px rgba(229,9,20,0.9); display:flex; align-items:center; justify-content:center; font-size:14px;">🚖</div>',
+                    html: '<div style="background:#E50914; width:30px; height:30px; border-radius:50%; border:3px solid white; box-shadow:0 0 15px rgba(229,9,20,0.9); display:flex; align-items:center; justify-content:center; font-size:15px;">🚖</div>',
                     className: 'driver-live-icon'
                 });
                 driverLiveMarker = L.marker(driverCoords, { icon: driverIcon }).addTo(map);
             } else {
                 driverLiveMarker.setLatLng(driverCoords);
+                map.panTo(driverCoords);
             }
 
             document.getElementById('mapRouteBadge').classList.remove('hidden');
             document.getElementById('mapRouteBadge').classList.add('flex');
-            document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en approche de votre position...";
+            document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en approche vers vous...";
             document.getElementById('routeDistanceText').innerText = "En route";
         }
 
@@ -860,6 +942,7 @@
                             <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2 text-xs">
                                 <div class="flex justify-between"><strong>Client : ${order.clientName}</strong><a href="tel:${order.clientPhone}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold">Appeler</a></div>
                                 <div>Départ : ${order.depart}</div>
+                                <div>Arrivée : ${order.destination}</div>
                             </div>
                             <button onclick="completeRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-gray-900 text-white text-xs py-3 rounded-xl font-extrabold uppercase">Terminer la course</button>
                         </div>
@@ -890,27 +973,34 @@
             if (order) {
                 order.status = 'accepted';
                 
-                // Simuler la position GPS du chauffeur (Dakar Mermoz/Fann)
-                const driverLat = 14.7000, driverLng = -17.4650;
+                // Informations du chauffeur simulées
+                const driverName = "Moussa Diop";
+                const driverPhone = "+221 77 845 12 34";
+                const driverCar = "Peugeot 301 • DK-4820-AP";
+                let driverLat = 14.7088, driverLng = -17.4741;
+
+                order.driverName = driverName;
+                order.driverPhone = driverPhone;
+                order.driverCar = driverCar;
                 order.driverLat = driverLat;
                 order.driverLng = driverLng;
 
                 renderDriverOrders();
                 if (window.updateOrderStatusInCloud) {
-                    window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverLat, driverLng });
+                    window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverName, driverPhone, driverCar, driverLat, driverLng });
                 }
 
-                // Démarrer la diffusion en direct de la position du chauffeur toutes les 3s
+                // Démarrer la simulation de déplacement du chauffeur vers le passager
                 if (acceptedOrderTrackingInterval) clearInterval(acceptedOrderTrackingInterval);
                 acceptedOrderTrackingInterval = setInterval(() => {
-                    order.driverLat += 0.0005; // Simulation de déplacement vers le client
-                    order.driverLng += 0.0005;
+                    order.driverLat += 0.0004;
+                    order.driverLng += 0.0004;
                     if (window.updateOrderStatusInCloud) {
                         window.updateOrderStatusInCloud(orderId, 'update_pos', docId || null, { driverLat: order.driverLat, driverLng: order.driverLng });
                     }
                 }, 3000);
 
-                alert("Course acceptée ! Votre position GPS est désormais partagée en direct sur la carte du passager.");
+                alert("Course acceptée ! Le suivi GPS en direct est maintenant actif pour le passager.");
             }
         }
 
@@ -921,10 +1011,7 @@
             if (window.updateOrderStatusInCloud) {
                 window.updateOrderStatusInCloud(orderId, 'completed', docId || null);
             }
-            if (driverLiveMarker && map) {
-                map.removeLayer(driverLiveMarker);
-                driverLiveMarker = null;
-            }
+            alert("Course terminée avec succès !");
         }
 
         function toggleUserRole() {
@@ -934,6 +1021,8 @@
                 btnText.innerText = 'Mode Passager';
                 document.getElementById('homeSheet').classList.add('hidden');
                 document.getElementById('orderSheet').classList.add('hidden');
+                document.getElementById('passengerWaitingSheet').classList.add('hidden');
+                document.getElementById('passengerTrackingSheet').classList.add('hidden');
                 document.getElementById('driverSheet').classList.remove('hidden');
                 document.getElementById('driverSheet').classList.add('flex');
                 renderDriverOrders();
