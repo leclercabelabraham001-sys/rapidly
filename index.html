@@ -44,6 +44,16 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .shadow-yango { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04); }
         .shadow-card { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); }
+
+        @keyframes gps-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75); }
+            70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .gps-user-dot {
+            animation: gps-pulse 2s infinite;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased">
@@ -78,7 +88,16 @@
         <div class="relative w-full flex-1">
             <div id="map"></div>
 
-            <!-- BANDEAU TRAJET DYNAMIQUE -->
+            <!-- BADGE STATUT POSITION GPS ACTUELLE -->
+            <div id="gpsStatusPill" class="absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-yango transition-all">
+                <div class="flex items-center gap-2 truncate pr-2">
+                    <span id="gpsDotIndicator" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping shrink-0"></span>
+                    <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Localisation GPS en cours...</span>
+                </div>
+                <span id="gpsBadgeTag" class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
+            </div>
+
+            <!-- BANDEAU TRAJET DYNAMIQUE (Quand destination choisie) -->
             <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200 justify-between items-center text-gray-900 shadow-yango transition-all">
                 <div class="flex items-center gap-2 truncate pr-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
@@ -90,8 +109,8 @@
                 </div>
             </div>
 
-            <!-- Bouton Recentrer GPS -->
-            <button onclick="recenterMap()" class="absolute right-4 bottom-80 z-20 w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-yango active:scale-95 transition">
+            <!-- Bouton Recentrer GPS Réel -->
+            <button onclick="locateUserExactPosition(true)" title="Ma position exacte" class="absolute right-4 bottom-80 z-20 w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-yango active:scale-95 transition">
                 <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </button>
         </div>
@@ -106,7 +125,7 @@
                     <div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
                     <div>
                         <span class="text-sm font-extrabold text-gray-900 block">Où allez-vous ?</span>
-                        <span class="text-xs text-gray-500 font-medium">Entrez n'importe quel quartier du Sénégal...</span>
+                        <span id="homeCurrentPosSub" class="text-xs text-gray-500 font-medium">Départ depuis votre position actuelle...</span>
                     </div>
                 </div>
                 <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
@@ -116,7 +135,7 @@
 
             <!-- GRILLE 4 SERVICES -->
             <div class="grid grid-cols-4 gap-2.5">
-                <!-- Ville (VTC Voiture Berline) -->
+                <!-- Ville (VTC Voiture) -->
                 <div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 hover:border-rapidlyRed/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-rapidlyRed/10 text-rapidlyRed group-hover:bg-rapidlyRed group-hover:text-white transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,24 +180,27 @@
                 </div>
             </div>
 
-            <!-- Raccourcis Rapides -->
+            <!-- Destinations populaires depuis votre position actuelle -->
             <div class="space-y-2 pt-1">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Trajets rapides</span>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Destinations depuis votre position</span>
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <button onclick="quickSelectDestination('Fann Résidence', 'Sacré-Cœur 3')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
-                        📍 Fann ➔ Sacré-Cœur 3
+                    <button onclick="quickSelectFromCurrentPos('Dakar Plateau')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
+                        📍 Vers Plateau
                     </button>
-                    <button onclick="quickSelectDestination('Mermoz Pyrotechnie', 'Dakar Plateau')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
-                        📍 Mermoz ➔ Plateau
+                    <button onclick="quickSelectFromCurrentPos('Les Almadies')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
+                        📍 Vers Almadies
                     </button>
-                    <button onclick="quickSelectDestination('Les Almadies', 'Aéroport AIBD')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
-                        ✈️ Almadies ➔ AIBD
+                    <button onclick="quickSelectFromCurrentPos('Sacré-Cœur 3')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
+                        📍 Vers Sacré-Cœur 3
+                    </button>
+                    <button onclick="quickSelectFromCurrentPos('Aéroport AIBD')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">
+                        ✈️ Vers AIBD
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 2. FENÊTRE DE COMMANDE AVEC AUTOCOMPLÉTION SÉNÉGAL & TARIF RÉEL -->
+        <!-- 2. FENÊTRE DE COMMANDE AVEC DÉPART GPS AUTOMATIQUE & TARIF RÉEL -->
         <div id="orderSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-3.5 shadow-yango border-t border-gray-200 max-h-[82vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-gray-100 pb-2.5">
                 <div class="flex items-center gap-2.5">
@@ -187,16 +209,18 @@
                     </button>
                     <h3 id="orderServiceTitle" class="font-black text-base text-gray-900">VTC Ville</h3>
                 </div>
-                <span class="text-xs bg-rapidlyRed/10 text-rapidlyRed px-2.5 py-1 rounded-full font-extrabold">18% Commission</span>
+                <button onclick="locateUserExactPosition(true)" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-extrabold flex items-center gap-1 active:scale-95 transition">
+                    <span>📍 Ma position GPS</span>
+                </button>
             </div>
 
-            <!-- Saisie Départ & Destination avec Suggestions Dynamiques -->
+            <!-- Saisie Départ & Destination -->
             <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 space-y-2.5 relative">
                 <div class="flex items-center gap-3 relative">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0 ring-4 ring-emerald-500/20"></span>
                     <div class="flex-1">
-                        <label class="text-[9px] text-gray-400 uppercase font-extrabold block">Point de Départ</label>
-                        <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" value="Fann Résidence" placeholder="Ex: Mermoz, Parcelles, Médina..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
+                        <label class="text-[9px] text-emerald-600 uppercase font-extrabold block">Point de Départ (Position actuelle)</label>
+                        <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" placeholder="Détection de votre position..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
                 <div id="departSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-36 overflow-y-auto divide-y divide-gray-100 z-50"></div>
@@ -274,6 +298,7 @@
         let currentPrice = 1500;
         let selectedService = 'ville';
         let userMarker, destMarker, routeLine;
+        let currentGpsLocation = null; // Position GPS exacte de l'utilisateur
         let selectedDepartObj = null;
         let selectedDestObj = null;
         let activeRealOrders = [];
@@ -338,6 +363,8 @@
             initMap();
             loadSavedUser();
             renderDriverOrders();
+            // Détection automatique immédiate de la position GPS exacte à l'entrée dans l'app
+            locateUserExactPosition(false);
         });
 
         function loadSavedUser() {
@@ -350,28 +377,116 @@
         function openProfileModal() {
             const name = localStorage.getItem('rapidly_user_name') || 'Non renseigné';
             const phone = localStorage.getItem('rapidly_user_phone') || 'Non renseigné';
-            alert(`Profil Utilisateur RAPIDLY :\nNom : ${name}\nTéléphone : ${phone}\n\nCes informations sont automatiquement transmises au chauffeur lors de votre commande.`);
+            const pos = currentGpsLocation ? currentGpsLocation.name : 'Détection GPS en cours';
+            alert(`Profil Utilisateur RAPIDLY :\nNom : ${name}\nTéléphone : ${phone}\nPosition GPS actuelle : ${pos}`);
         }
 
         function initMap() {
-            const dakarCenter = [14.7088, -17.4741];
-            selectedDepartObj = SENEGAL_LOCATIONS.find(l => l.name.includes("Fann"));
+            const defaultDakar = [14.7088, -17.4741];
 
             if (typeof L !== 'undefined') {
-                map = L.map('map', { zoomControl: false, attributionControl: false }).setView(dakarCenter, 13);
+                map = L.map('map', { zoomControl: false, attributionControl: false }).setView(defaultDakar, 14);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
                 const userIcon = L.divIcon({
-                    html: '<div style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.7);"></div>'
+                    html: '<div class="gps-user-dot" style="background:#10B981; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.9);"></div>'
                 });
-                userMarker = L.marker(dakarCenter, { icon: userIcon }).addTo(map);
+                userMarker = L.marker(defaultDakar, { icon: userIcon }).addTo(map);
 
                 setTimeout(() => { map.invalidateSize(); }, 200);
             }
         }
 
-        function recenterMap() {
-            if (map && userMarker) map.setView(userMarker.getLatLng(), 14);
+        // GÉOLOCALISATION GPS EXACTE + GÉOCODAGE INVERSE (NOM DU QUARTIER/RUE)
+        function locateUserExactPosition(forceCenter = false) {
+            const labelEl = document.getElementById('gpsAddressLabel');
+            const dotEl = document.getElementById('gpsDotIndicator');
+            const subEl = document.getElementById('homeCurrentPosSub');
+
+            if (labelEl) labelEl.innerText = "Recherche de votre position GPS exacte...";
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        // Mise à jour immédiate de la carte et du marqueur
+                        if (map && userMarker) {
+                            userMarker.setLatLng([lat, lng]);
+                            if (!selectedDestObj || forceCenter) {
+                                map.setView([lat, lng], 16);
+                            }
+                        }
+
+                        // Géocodage inverse pour obtenir l'adresse exacte (Quartier, Rue, Ville)
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`)
+                            .then(res => res.json())
+                            .then(data => {
+                                let formattedAddr = `Ma position (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                                if (data && data.address) {
+                                    const addr = data.address;
+                                    const road = addr.road || addr.pedestrian || addr.residential || "";
+                                    const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.city_district || "";
+                                    const city = addr.city || addr.town || addr.village || "Dakar";
+
+                                    const parts = [road, suburb, city].filter(Boolean);
+                                    if (parts.length > 0) {
+                                        formattedAddr = parts.slice(0, 2).join(', ');
+                                    }
+                                }
+
+                                currentGpsLocation = {
+                                    name: formattedAddr,
+                                    zone: "Position GPS Exacte",
+                                    lat: lat,
+                                    lng: lng
+                                };
+
+                                selectedDepartObj = currentGpsLocation;
+
+                                // Mise à jour de tous les champs d'interface
+                                document.getElementById('orderDepartInput').value = formattedAddr;
+                                if (labelEl) labelEl.innerText = `📍 ${formattedAddr}`;
+                                if (subEl) subEl.innerText = `Départ : ${formattedAddr}`;
+                                if (dotEl) {
+                                    dotEl.classList.remove('bg-amber-500', 'animate-ping');
+                                    dotEl.classList.add('bg-emerald-500');
+                                }
+
+                                if (selectedDestObj) {
+                                    recalculateDynamicFare();
+                                }
+                            })
+                            .catch(() => {
+                                const fallbackName = `Ma position GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                                currentGpsLocation = { name: fallbackName, lat: lat, lng: lng };
+                                selectedDepartObj = currentGpsLocation;
+                                document.getElementById('orderDepartInput').value = fallbackName;
+                                if (labelEl) labelEl.innerText = `📍 ${fallbackName}`;
+                                if (subEl) subEl.innerText = `Départ : ${fallbackName}`;
+                            });
+                    },
+                    (error) => {
+                        // Si l'utilisateur refuse le GPS sur le navigateur, fallback intelligent sur Dakar
+                        const fallbackLoc = SENEGAL_LOCATIONS.find(l => l.name.includes("Mermoz")) || SENEGAL_LOCATIONS[0];
+                        currentGpsLocation = fallbackLoc;
+                        selectedDepartObj = fallbackLoc;
+                        document.getElementById('orderDepartInput').value = fallbackLoc.name;
+                        if (labelEl) labelEl.innerText = `📍 ${fallbackLoc.name} (Activez le GPS pour + de précision)`;
+                        if (subEl) subEl.innerText = `Départ : ${fallbackLoc.name}`;
+                        if (dotEl) {
+                            dotEl.classList.remove('bg-amber-500', 'animate-ping');
+                            dotEl.classList.add('bg-emerald-500');
+                        }
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            }
         }
 
         function normalizeStr(str) {
@@ -392,6 +507,19 @@
             const matches = SENEGAL_LOCATIONS.filter(loc => normalizeStr(loc.name).includes(query) || normalizeStr(loc.zone).includes(query));
 
             sugBox.innerHTML = '';
+            
+            // Option spéciale en tête de liste pour le départ : revenir à sa position GPS exacte
+            if (field === 'depart' && currentGpsLocation) {
+                const gpsDiv = document.createElement('div');
+                gpsDiv.className = "p-2.5 bg-emerald-50/70 hover:bg-emerald-100 cursor-pointer flex justify-between items-center text-xs";
+                gpsDiv.innerHTML = `<span class="font-extrabold text-emerald-800">📍 Utiliser ma position GPS exacte</span><span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded">ACTUEL</span>`;
+                gpsDiv.onclick = () => {
+                    selectLocation('depart', currentGpsLocation);
+                    sugBox.classList.add('hidden');
+                };
+                sugBox.appendChild(gpsDiv);
+            }
+
             if (matches.length > 0) {
                 matches.slice(0, 6).forEach(loc => {
                     const div = document.createElement('div');
@@ -414,7 +542,6 @@
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=sn&q=${encodeURIComponent(inputEl.value)}&limit=3`)
                         .then(res => res.json())
                         .then(data => {
-                            sugBox.innerHTML = '';
                             if (data && data.length > 0) {
                                 data.forEach(item => {
                                     const shortName = item.display_name.split(',').slice(0, 2).join(',');
@@ -435,7 +562,7 @@
                                 else selectedDestObj = firstLoc;
                                 recalculateDynamicFare();
                             } else {
-                                sugBox.classList.add('hidden');
+                                if (sugBox.children.length === 0) sugBox.classList.add('hidden');
                             }
                         }).catch(() => {});
                 }, 400);
@@ -498,7 +625,7 @@
             if (routeLine) map.removeLayer(routeLine);
 
             const startIcon = L.divIcon({
-                html: '<div style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.8);"></div>'
+                html: '<div class="gps-user-dot" style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.8);"></div>'
             });
             userMarker = L.marker(startCoords, { icon: startIcon }).addTo(map);
 
@@ -515,6 +642,8 @@
 
             map.fitBounds(routeLine.getBounds(), { padding: [55, 55] });
 
+            // Masquer la pilule GPS simple pour afficher le bandeau de trajet complet
+            document.getElementById('gpsStatusPill').classList.add('hidden');
             const badge = document.getElementById('mapRouteBadge');
             badge.classList.remove('hidden');
             badge.classList.add('flex');
@@ -531,6 +660,12 @@
                 'regions': 'Liaison Interurbaine Régions',
                 'fret': 'Transport Fret & Camion'
             };
+
+            // Assurer que le départ est bien calé sur la position GPS actuelle s'il n'a pas été modifié manuellement
+            if (currentGpsLocation && !document.getElementById('orderDepartInput').value) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
+            }
 
             document.getElementById('orderServiceTitle').innerText = titles[serviceType] || 'Commander';
             document.getElementById('homeSheet').classList.add('hidden');
@@ -550,13 +685,13 @@
             if (map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
-        function quickSelectDestination(depQuery, destQuery) {
-            const dep = SENEGAL_LOCATIONS.find(l => normalizeStr(l.name).includes(normalizeStr(depQuery)));
-            const dest = SENEGAL_LOCATIONS.find(l => normalizeStr(l.name).includes(normalizeStr(destQuery)));
-            if (dep) {
-                selectedDepartObj = dep;
-                document.getElementById('orderDepartInput').value = dep.name;
+        // Sélection rapide d'une destination directement depuis la position GPS actuelle
+        function quickSelectFromCurrentPos(destQuery) {
+            if (currentGpsLocation) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
             }
+            const dest = SENEGAL_LOCATIONS.find(l => normalizeStr(l.name).includes(normalizeStr(destQuery)));
             if (dest) {
                 selectedDestObj = dest;
                 document.getElementById('orderDestInput').value = dest.name;
@@ -612,7 +747,7 @@
             setTimeout(() => {
                 btn.innerText = "Commander & Diffuser aux Chauffeurs";
                 btn.style.opacity = "1";
-                alert(`✅ Commande publiée !\n\nClient : ${clientName} (${clientPhone})\nTrajet : ${depName} ➔ ${destName}\nOffre : ${currentPrice.toLocaleString('fr-FR')} FCFA\n\nBasculez sur "Mode Chauffeur" en haut à droite pour voir et accepter votre commande en direct.`);
+                alert(`✅ Commande publiée !\n\nClient : ${clientName} (${clientPhone})\nPosition de départ : ${depName}\nDestination : ${destName}\nOffre : ${currentPrice.toLocaleString('fr-FR')} FCFA\n\nBasculez sur "Mode Chauffeur" en haut à droite pour voir et accepter votre commande en direct.`);
             }, 900);
         }
 
@@ -624,7 +759,7 @@
                 container.innerHTML = `
                     <div class="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-6 text-center space-y-2">
                         <p class="text-xs font-extrabold text-gray-700">Aucune commande active pour le moment</p>
-                        <p class="text-[11px] text-gray-500">Passez en <strong>Mode Passager</strong>, saisissez un trajet et validez une commande : elle apparaîtra ici instantanément avec votre vrai nom et votre numéro.</p>
+                        <p class="text-[11px] text-gray-500">Passez en <strong>Mode Passager</strong>, saisissez une destination depuis votre position actuelle et validez : elle apparaîtra ici instantanément.</p>
                     </div>
                 `;
                 return;
@@ -661,7 +796,7 @@
                             </div>
 
                             <div class="bg-white p-3 rounded-xl border border-gray-200 text-xs space-y-1">
-                                <div class="flex justify-between"><span class="text-gray-500">Départ :</span><strong class="text-gray-900">${order.depart}</strong></div>
+                                <div class="flex justify-between"><span class="text-gray-500">Position départ :</span><strong class="text-gray-900">${order.depart}</strong></div>
                                 <div class="flex justify-between"><span class="text-gray-500">Arrivée :</span><strong class="text-gray-900">${order.destination}</strong></div>
                             </div>
 
