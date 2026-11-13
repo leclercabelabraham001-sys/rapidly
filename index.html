@@ -101,11 +101,11 @@
                 <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
             </div>
 
-            <!-- BANDEAU TRAJET & SUIVI CHAUFFEUR EN DIRECT -->
+            <!-- BANDEAU SUIVI CHAUFFEUR EN DIRECT -->
             <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200 justify-between items-center text-gray-900 shadow-yango transition-all">
                 <div class="flex items-center gap-2 truncate pr-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
-                    <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route...</span>
+                    <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route vers vous...</span>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span id="routeDistanceText" class="font-extrabold text-xs text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full">En approche</span>
@@ -475,7 +475,7 @@
         let selectedDestObj = null;
         let activeRealOrders = [];
         let currentActiveOrderId = null;
-        let acceptedOrderTrackingInterval = null;
+        let driverGpsBroadcastInterval = null;
 
         window.syncIncomingOrdersFromCloud = function(cloudOrders) {
             if (!Array.isArray(cloudOrders)) return;
@@ -484,13 +484,11 @@
             activeRealOrders = [...localPending, ...cloudOrders];
             renderDriverOrders();
 
-            // Vérifier si la commande en cours du passager a été acceptée
             if (currentActiveOrderId) {
                 const orderInCloud = activeRealOrders.find(o => o.id === currentActiveOrderId);
                 if (orderInCloud && orderInCloud.status === 'accepted') {
                     triggerPassengerTrackingView(orderInCloud);
                 } else if (!orderInCloud) {
-                    // Supprimée / Terminée
                     resetPassengerToHome();
                 }
             }
@@ -768,11 +766,6 @@
             map.fitBounds(routeLine.getBounds(), { padding: [55, 55] });
 
             document.getElementById('gpsStatusPill').classList.add('hidden');
-            const badge = document.getElementById('mapRouteBadge');
-            badge.classList.remove('hidden');
-            badge.classList.add('flex');
-            document.getElementById('routeBadgeText').innerText = `${depName} ➔ ${destName}`;
-            document.getElementById('routeDistanceText').innerText = `${distKm} km`;
         }
 
         function openOrderModal(serviceType) {
@@ -833,7 +826,7 @@
                 depart: depName,
                 destination: destName,
                 price: currentPrice,
-                distance: document.getElementById('routeDistanceText').innerText || "Calculée",
+                distance: document.getElementById('routeDistanceText')?.innerText || "Calculée",
                 service: selectedService.toUpperCase(),
                 status: 'pending'
             };
@@ -846,7 +839,6 @@
                 window.publishOrderToCloud(newOrder);
             }
 
-            // Basculer l'écran passager en mode Attente
             document.getElementById('orderSheet').classList.add('hidden');
             document.getElementById('orderSheet').classList.remove('flex');
             document.getElementById('passengerWaitingSheet').classList.remove('hidden');
@@ -864,7 +856,6 @@
         }
 
         function triggerPassengerTrackingView(order) {
-            // Cacher les écrans de départ/attente et afficher le suivi du chauffeur en route
             document.getElementById('passengerWaitingSheet').classList.add('hidden');
             document.getElementById('passengerWaitingSheet').classList.remove('flex');
             document.getElementById('homeSheet').classList.add('hidden');
@@ -878,7 +869,6 @@
             document.getElementById('trackPriceVal').innerText = `${order.price.toLocaleString()} FCFA`;
             document.getElementById('trackDestVal').innerText = order.destination;
 
-            // Afficher le véhicule sur la carte
             if (order.driverLat && order.driverLng) {
                 updateDriverPositionOnPassengerMap(order.driverLat, order.driverLng);
             }
@@ -896,7 +886,6 @@
             if (map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
-        // MISE À JOUR DE LA POSITION DU CHAUFFEUR EN TEMPS RÉEL SUR LA CARTE PASSAGER
         function updateDriverPositionOnPassengerMap(lat, lng) {
             if (!map) return;
             const driverCoords = [lat, lng];
@@ -912,8 +901,9 @@
                 map.panTo(driverCoords);
             }
 
-            document.getElementById('mapRouteBadge').classList.remove('hidden');
-            document.getElementById('mapRouteBadge').classList.add('flex');
+            const badge = document.getElementById('mapRouteBadge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
             document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en approche vers vous...";
             document.getElementById('routeDistanceText').innerText = "En route";
         }
@@ -973,45 +963,56 @@
             if (order) {
                 order.status = 'accepted';
                 
-                // Informations du chauffeur simulées
                 const driverName = "Moussa Diop";
                 const driverPhone = "+221 77 845 12 34";
                 const driverCar = "Peugeot 301 • DK-4820-AP";
-                let driverLat = 14.7088, driverLng = -17.4741;
+
+                // Utiliser la vraie position GPS du chauffeur si disponible, sinon défaut Dakar
+                let startLat = 14.7088, startLng = -17.4741;
+                if (currentGpsLocation) {
+                    startLat = currentGpsLocation.lat;
+                    startLng = currentGpsLocation.lng;
+                }
 
                 order.driverName = driverName;
                 order.driverPhone = driverPhone;
                 order.driverCar = driverCar;
-                order.driverLat = driverLat;
-                order.driverLng = driverLng;
+                order.driverLat = startLat;
+                order.driverLng = startLng;
 
                 renderDriverOrders();
                 if (window.updateOrderStatusInCloud) {
-                    window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverName, driverPhone, driverCar, driverLat, driverLng });
+                    window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverName, driverPhone, driverCar, driverLat: startLat, driverLng: startLng });
                 }
 
-                // Démarrer la simulation de déplacement du chauffeur vers le passager
-                if (acceptedOrderTrackingInterval) clearInterval(acceptedOrderTrackingInterval);
-                acceptedOrderTrackingInterval = setInterval(() => {
-                    order.driverLat += 0.0004;
-                    order.driverLng += 0.0004;
-                    if (window.updateOrderStatusInCloud) {
-                        window.updateOrderStatusInCloud(orderId, 'update_pos', docId || null, { driverLat: order.driverLat, driverLng: order.driverLng });
+                // Diffuser la position GPS réelle du chauffeur en direct toutes les 2 secondes
+                if (driverGpsBroadcastInterval) clearInterval(driverGpsBroadcastInterval);
+                driverGpsBroadcastInterval = setInterval(() => {
+                    if ("geolocation" in navigator) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            const dLat = pos.coords.latitude;
+                            const dLng = pos.coords.longitude;
+                            order.driverLat = dLat;
+                            order.driverLng = dLng;
+                            if (window.updateOrderStatusInCloud) {
+                                window.updateOrderStatusInCloud(orderId, 'update_pos', docId || null, { driverLat: dLat, driverLng: dLng });
+                            }
+                        }, () => {}, { enableHighAccuracy: true });
                     }
-                }, 3000);
+                }, 2000);
 
-                alert("Course acceptée ! Le suivi GPS en direct est maintenant actif pour le passager.");
+                alert("Course acceptée ! Vous êtes désormais connecté en direct avec le passager.");
             }
         }
 
         function completeRealOrder(orderId, docId) {
-            if (acceptedOrderTrackingInterval) clearInterval(acceptedOrderTrackingInterval);
+            if (driverGpsBroadcastInterval) clearInterval(driverGpsBroadcastInterval);
             activeRealOrders = activeRealOrders.filter(o => o.id !== orderId);
             renderDriverOrders();
             if (window.updateOrderStatusInCloud) {
                 window.updateOrderStatusInCloud(orderId, 'completed', docId || null);
             }
-            alert("Course terminée avec succès !");
+            alert("Course clôturée avec succès !");
         }
 
         function toggleUserRole() {
