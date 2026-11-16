@@ -96,12 +96,12 @@
             <div id="gpsStatusPill" class="absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-yango transition-all">
                 <div class="flex items-center gap-2 truncate pr-2">
                     <span id="gpsDotIndicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                    <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Localisation GPS active</span>
+                    <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Dakar (Mermoz / Centre)</span>
                 </div>
                 <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
             </div>
 
-            <!-- BANDEAU SUIVI PASSAGER (UNIQUEMENT EN ROUTE) -->
+            <!-- BANDEAU SUIVI PASSAGER -->
             <div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200 justify-between items-center text-gray-900 shadow-yango transition-all">
                 <div class="flex items-center gap-2 truncate pr-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
@@ -141,7 +141,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6"/><circle cx="17" cy="17" r="2" stroke-width="2"/></svg>
                     </div>
                     <span class="text-xs font-bold text-gray-900">Ville</span>
-                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Négocié</span>
+                    <span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Standard</span>
                 </div>
                 <div onclick="openOrderModal('livraison')" class="bg-gray-50 border border-gray-200 hover:border-amber-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
                     <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition flex items-center justify-center">
@@ -196,7 +196,7 @@
                     <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0 ring-4 ring-emerald-500/20"></span>
                     <div class="flex-1">
                         <label class="text-[9px] text-emerald-600 uppercase font-extrabold block">Point de Départ (Position actuelle)</label>
-                        <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" placeholder="Détection de votre position..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
+                        <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" placeholder="Départ..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
                     </div>
                 </div>
                 <div id="departSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-36 overflow-y-auto divide-y divide-gray-100 z-50"></div>
@@ -213,26 +213,17 @@
                 <div id="destSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-40 overflow-y-auto divide-y divide-gray-100 z-50"></div>
             </div>
 
-            <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 flex flex-col gap-2.5">
+            <!-- TARIF FIXE AUTOMATIQUE (SANS NÉGOCIATION) -->
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-2">
                 <div class="flex justify-between items-center">
-                    <span id="distanceCalcInfo" class="text-xs font-bold text-gray-500">Entrez une destination</span>
-                    <span id="suggestedPriceTag" class="text-xs bg-rapidlyRed/10 text-rapidlyRed px-2.5 py-0.5 rounded-full font-extrabold">Conseillé: -- FCFA</span>
+                    <span id="distanceCalcInfo" class="text-xs font-bold text-gray-500">Distance estimée : -- km</span>
+                    <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-extrabold">Tarif fixe garanti</span>
                 </div>
-
-                <div class="flex items-center justify-between gap-3 my-0.5">
-                    <button onclick="adjustPrice(-100)" class="w-11 h-11 bg-white hover:bg-gray-100 active:scale-95 rounded-2xl font-black text-2xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-200 transition">-</button>
-                    <div class="text-center">
-                        <span id="priceVal" class="text-3xl font-black text-gray-900 tracking-tight">1500</span>
-                        <span class="text-xs text-gray-500 block font-bold">FCFA</span>
-                    </div>
-                    <button onclick="adjustPrice(100)" class="w-11 h-11 bg-white hover:bg-gray-100 active:scale-95 rounded-2xl font-black text-2xl flex items-center justify-center text-gray-900 shadow-sm border border-gray-200 transition">+</button>
+                <div class="text-center py-2">
+                    <span id="priceVal" class="text-4xl font-black text-gray-900 tracking-tight">--</span>
+                    <span class="text-xs text-gray-500 block font-bold mt-0.5">FCFA</span>
                 </div>
-
-                <div class="flex justify-center gap-2">
-                    <button onclick="adjustPrice(200)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1 rounded-xl font-bold shadow-sm">+200 F</button>
-                    <button onclick="adjustPrice(500)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1 rounded-xl font-bold shadow-sm">+500 F</button>
-                    <button onclick="adjustPrice(1000)" class="bg-white border border-gray-200 text-gray-800 text-xs px-3 py-1 rounded-xl font-bold shadow-sm">+1000 F</button>
-                </div>
+                <p class="text-[11px] text-center text-gray-400 font-medium">Calculé automatiquement selon le kilométrage exact</p>
             </div>
 
             <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 grid grid-cols-2 gap-2">
@@ -251,7 +242,7 @@
             </button>
         </div>
 
-        <!-- 3. ÉCRAN D'ATTENTE PASSAGER (RADAR YANGO) -->
+        <!-- 3. ÉCRAN D'ATTENTE PASSAGER -->
         <div id="passengerWaitingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200 text-center">
             <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
             <div class="w-16 h-16 rounded-full bg-rapidlyRed/10 text-rapidlyRed flex items-center justify-center mx-auto animate-pulse">
@@ -259,18 +250,18 @@
             </div>
             <div>
                 <h3 class="font-black text-lg text-gray-900">Recherche d'un chauffeur...</h3>
-                <p class="text-xs text-gray-500 mt-1">Vos offres sont transmises aux conducteurs RAPIDLY à proximité.</p>
+                <p class="text-xs text-gray-500 mt-1">Diffusion de votre course aux conducteurs RAPIDLY à proximité.</p>
             </div>
             <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left text-xs space-y-1">
                 <div class="flex justify-between"><span class="text-gray-400">Trajet :</span><strong class="text-gray-900 truncate" id="waitRouteSummary">...</strong></div>
-                <div class="flex justify-between"><span class="text-gray-400">Votre offre :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
+                <div class="flex justify-between"><span class="text-gray-400">Tarif fixe :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
             </div>
             <button onclick="cancelPassengerSearch()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl text-xs uppercase transition">
                 Annuler la recherche
             </button>
         </div>
 
-        <!-- 4. ÉCRAN DE SUIVI COURSE EN COURS (PASSAGER) -->
+        <!-- 4. ÉCRAN DE SUIVI COURSE EN COURS -->
         <div id="passengerTrackingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200">
             <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
             <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl">
@@ -284,7 +275,7 @@
                 </a>
             </div>
             <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs space-y-1.5">
-                <div class="flex justify-between"><span class="text-gray-500">Montant convenu :</span><strong id="trackPriceVal" class="text-rapidlyRed font-black text-sm">-- FCFA</strong></div>
+                <div class="flex justify-between"><span class="text-gray-500">Tarif fixe :</span><strong id="trackPriceVal" class="text-rapidlyRed font-black text-sm">-- FCFA</strong></div>
                 <div class="flex justify-between"><span class="text-gray-500">Destination :</span><strong id="trackDestVal" class="text-gray-900">--</strong></div>
             </div>
             <div class="text-center text-xs text-zinc-400 font-semibold">Suivi GPS en temps réel actif sur la carte</div>
@@ -298,14 +289,13 @@
                         <h4 class="font-extrabold text-sm text-gray-900">Yango Pro - RAPIDLY</h4>
                         <span id="cloudSyncBadge" class="text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">SYNC LIVE</span>
                     </div>
-                    <p class="text-xs text-emerald-600 font-bold mt-0.5">● En ligne • Commission 18% par course</p>
+                    <p class="text-xs text-emerald-600 font-bold mt-0.5">● En ligne • <strong>0% Commission</strong> (Promo Lancement)</p>
                 </div>
                 <button onclick="window.forceRefreshCloudOrders()" class="bg-white border border-gray-200 px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold text-gray-700 shadow-sm active:scale-95">
                     🔄 Actualiser
                 </button>
             </div>
 
-            <!-- CONFIGURATION VÉHICULE & CONDUCTEUR -->
             <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-3">
                 <h5 class="text-xs font-black text-gray-900 uppercase">Vos informations de Conducteur (Yango Pro)</h5>
                 <div class="grid grid-cols-2 gap-2">
@@ -492,7 +482,7 @@
         let currentPrice = 1500;
         let selectedService = 'ville';
         let userMarker, destMarker, routeLine, driverLiveMarker;
-        let currentGpsLocation = null;
+        let currentGpsLocation = { name: "Mermoz Pyrotechnie, Dakar", lat: 14.7088, lng: -17.4741 };
         let selectedDepartObj = null;
         let selectedDestObj = null;
         let activeRealOrders = [];
@@ -617,7 +607,8 @@
             localStorage.setItem('rapidly_driver_name', dName);
             localStorage.setItem('rapidly_driver_phone', dPhone);
             localStorage.setItem('rapidly_driver_car', dCar);
-            alert("✅ Vos informations de conducteur ont été enregistrées avec succès !");
+            alert("✅ Profil validé ! Vous pouvez maintenant voir et accepter les courses.");
+            renderDriverOrders();
         }
 
         function openProfileModal() {
@@ -645,46 +636,35 @@
 
         function locateUserExactPosition(forceCenter = false) {
             const labelEl = document.getElementById('gpsAddressLabel');
-            const dotEl = document.getElementById('gpsDotIndicator');
             const subEl = document.getElementById('homeCurrentPosSub');
 
-            if (labelEl) labelEl.innerText = "Recherche de votre position GPS...";
-
-            const fallbackTimer = setTimeout(() => {
-                if (!currentGpsLocation) {
-                    const fallbackLoc = SENEGAL_LOCATIONS.find(l => l.name.includes("Mermoz")) || SENEGAL_LOCATIONS[0];
-                    currentGpsLocation = fallbackLoc;
-                    selectedDepartObj = fallbackLoc;
-                    document.getElementById('orderDepartInput').value = fallbackLoc.name;
-                    if (labelEl) labelEl.innerText = `📍 ${fallbackLoc.name}`;
-                    if (subEl) subEl.innerText = `Départ : ${fallbackLoc.name}`;
-                }
-            }, 4000);
+            if (currentGpsLocation) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
+                if (labelEl) labelEl.innerText = `📍 ${currentGpsLocation.name}`;
+                if (subEl) subEl.innerText = `Départ : ${currentGpsLocation.name}`;
+            }
 
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        clearTimeout(fallbackTimer);
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
 
                         if (map && userMarker) {
                             userMarker.setLatLng([lat, lng]);
-                            if (!selectedDestObj || forceCenter) {
-                                map.setView([lat, lng], 16);
-                            }
+                            if (forceCenter) map.setView([lat, lng], 16);
                         }
 
                         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`)
                             .then(res => res.json())
                             .then(data => {
-                                let formattedAddr = `Ma position (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                                let formattedAddr = `Position GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
                                 if (data && data.address) {
                                     const addr = data.address;
                                     const road = addr.road || addr.pedestrian || addr.residential || "";
-                                    const suburb = addr.suburb || addr.neighbourhood || addr.quarter || "";
-                                    const city = addr.city || addr.town || "Dakar";
-                                    const parts = [road, suburb, city].filter(Boolean);
+                                    const suburb = addr.suburb || addr.neighbourhood || "";
+                                    const parts = [road, suburb, "Dakar"].filter(Boolean);
                                     if (parts.length > 0) formattedAddr = parts.slice(0, 2).join(', ');
                                 }
 
@@ -693,21 +673,11 @@
                                 document.getElementById('orderDepartInput').value = formattedAddr;
                                 if (labelEl) labelEl.innerText = `📍 ${formattedAddr}`;
                                 if (subEl) subEl.innerText = `Départ : ${formattedAddr}`;
-                                if (dotEl) {
-                                    dotEl.classList.remove('bg-amber-500', 'animate-ping');
-                                    dotEl.classList.add('bg-emerald-500');
-                                }
                             })
                             .catch(() => {});
                     },
-                    () => {
-                        clearTimeout(fallbackTimer);
-                        const fallbackLoc = SENEGAL_LOCATIONS[5];
-                        currentGpsLocation = fallbackLoc;
-                        selectedDepartObj = fallbackLoc;
-                        document.getElementById('orderDepartInput').value = fallbackLoc.name;
-                    },
-                    { enableHighAccuracy: true, timeout: 8000 }
+                    () => {},
+                    { enableHighAccuracy: true, timeout: 6000 }
                 );
             }
         }
@@ -716,7 +686,6 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, " ");
         }
 
-        let geocodeTimeout = null;
         function handleAddressInput(field) {
             const inputEl = field === 'depart' ? document.getElementById('orderDepartInput') : document.getElementById('orderDestInput');
             const sugBox = field === 'depart' ? document.getElementById('departSuggestions') : document.getElementById('destSuggestions');
@@ -732,7 +701,7 @@
 
             if (field === 'depart' && currentGpsLocation) {
                 const gpsDiv = document.createElement('div');
-                gpsDiv.className = "p-2.5 bg-emerald-50/70 hover:bg-emerald-100 cursor-pointer flex justify-between items-center text-xs";
+                gpsDiv.className = "p-2.5 bg-emerald-50 hover:bg-emerald-100 cursor-pointer flex justify-between items-center text-xs";
                 gpsDiv.innerHTML = `<span class="font-extrabold text-emerald-800">📍 Utiliser ma position GPS exacte</span>`;
                 gpsDiv.onclick = () => { selectLocation('depart', currentGpsLocation); sugBox.classList.add('hidden'); };
                 sugBox.appendChild(gpsDiv);
@@ -785,8 +754,7 @@
             let calculated = Math.round((basePrice + parseFloat(distKm) * kmRate) / 100) * 100;
             currentPrice = Math.max(1000, calculated);
 
-            document.getElementById('priceVal').innerText = currentPrice;
-            document.getElementById('suggestedPriceTag').innerText = `Conseillé: ${currentPrice.toLocaleString('fr-FR')} FCFA`;
+            document.getElementById('priceVal').innerText = currentPrice.toLocaleString('fr-FR');
             document.getElementById('distanceCalcInfo').innerText = `Distance estimée : ${distKm} km`;
 
             drawRouteOnMap(
@@ -849,11 +817,6 @@
             openOrderModal('ville');
         }
 
-        function adjustPrice(amt) {
-            currentPrice = Math.max(1000, currentPrice + amt);
-            document.getElementById('priceVal').innerText = currentPrice;
-        }
-
         function launchSearch() {
             const depName = document.getElementById('orderDepartInput').value.trim();
             const destName = document.getElementById('orderDestInput').value.trim();
@@ -874,7 +837,7 @@
                 depart: depName,
                 destination: destName,
                 price: currentPrice,
-                distance: document.getElementById('routeDistanceText')?.innerText || "Calculée",
+                distance: "Calculée",
                 service: selectedService.toUpperCase(),
                 status: 'pending'
             };
@@ -883,16 +846,14 @@
             activeRealOrders.unshift(newOrder);
             renderDriverOrders();
 
-            if (window.publishOrderToCloud) {
-                window.publishOrderToCloud(newOrder);
-            }
+            if (window.publishOrderToCloud) window.publishOrderToCloud(newOrder);
 
             document.getElementById('orderSheet').classList.add('hidden');
             document.getElementById('orderSheet').classList.remove('flex');
             document.getElementById('passengerWaitingSheet').classList.remove('hidden');
             document.getElementById('passengerWaitingSheet').classList.add('flex');
             document.getElementById('waitRouteSummary').innerText = `${depName} ➔ ${destName}`;
-            document.getElementById('waitPriceSummary').innerText = `${currentPrice.toLocaleString()} FCFA`;
+            document.getElementById('waitPriceSummary').innerText = `${currentPrice.toLocaleString('fr-FR')} FCFA`;
         }
 
         function cancelPassengerSearch() {
@@ -914,7 +875,7 @@
             document.getElementById('trackDriverName').innerText = order.driverName || "Chauffeur RAPIDLY";
             document.getElementById('trackDriverCar').innerText = order.driverCar || "Véhicule VTC";
             document.getElementById('trackDriverPhoneBtn').href = `tel:${order.driverPhone || '770000000'}`;
-            document.getElementById('trackPriceVal').innerText = `${order.price.toLocaleString()} FCFA`;
+            document.getElementById('trackPriceVal').innerText = `${order.price.toLocaleString('fr-FR')} FCFA`;
             document.getElementById('trackDestVal').innerText = order.destination;
 
             if (order.driverLat && order.driverLng) {
@@ -962,6 +923,20 @@
             const container = document.getElementById('driverWorkflowContainer');
             if (!container) return;
 
+            const driverName = localStorage.getItem('rapidly_driver_name');
+            const driverPhone = localStorage.getItem('rapidly_driver_phone');
+            const driverCar = localStorage.getItem('rapidly_driver_car');
+
+            if (!driverName || !driverPhone || !driverCar) {
+                container.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-center space-y-2">
+                        <p class="text-xs font-black text-amber-800">⚠️ Profil Chauffeur Incomplet</p>
+                        <p class="text-[11px] text-amber-700">Vous devez obligatoirement remplir et sauvegarder vos informations professionnelles (Nom, Téléphone, Véhicule) ci-dessus pour accéder aux commandes en direct.</p>
+                    </div>
+                `;
+                return;
+            }
+
             if (activeRealOrders.length === 0) {
                 container.innerHTML = `<div class="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-6 text-center text-xs text-gray-500">En attente de commandes en direct...</div>`;
                 return;
@@ -970,8 +945,6 @@
             let html = `<span class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Commandes en direct (${activeRealOrders.length})</span>`;
 
             activeRealOrders.forEach(order => {
-                const netGain = Math.round(order.price * 0.82);
-
                 if (order.status === 'accepted') {
                     html += `
                         <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-3 shadow-card">
@@ -996,9 +969,10 @@
                                 <p class="text-xs text-gray-500">${order.depart} &rarr; ${order.destination}</p>
                             </div>
                             <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200">
-                                <span class="text-xs text-gray-500">Offre : <strong class="text-rapidlyRed">${order.price.toLocaleString('fr-FR')} FCFA</strong></span>
-                                <span class="text-xs text-emerald-600 font-extrabold">Net : ${netGain.toLocaleString()} F</span>
+                                <span class="text-xs text-gray-500">Tarif fixe :</span>
+                                <span class="text-sm font-black text-rapidlyRed">${order.price.toLocaleString('fr-FR')} FCFA</span>
                             </div>
+                            <div class="text-[10px] text-emerald-600 font-bold text-right">Commission : 0% (Promo Lancement)</div>
                             <button onclick="acceptRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-rapidlyRed text-white text-xs py-3.5 rounded-xl font-extrabold uppercase">Accepter la course</button>
                         </div>
                     `;
@@ -1014,7 +988,7 @@
             const driverCar = localStorage.getItem('rapidly_driver_car');
 
             if (!driverName || !driverPhone || !driverCar) {
-                alert("Veuillez renseigner vos informations de conducteur (Nom, Téléphone, Véhicule) dans le bloc ci-dessus avant d'accepter une course !");
+                alert("Action bloquée : Veuillez enregistrer vos informations professionnelles de chauffeur !");
                 return;
             }
 
@@ -1053,7 +1027,7 @@
                     }
                 }, 2000);
 
-                alert("Course acceptée avec vos vraies informations de chauffeur !");
+                alert("Course acceptée ! Vos vraies informations ont été transmises au client.");
             }
         }
 
@@ -1064,7 +1038,7 @@
             if (window.updateOrderStatusInCloud) {
                 window.updateOrderStatusInCloud(orderId, 'completed', docId || null);
             }
-            alert("Course clôturée avec succès !");
+            alert("Course clôturée !");
         }
 
         function toggleUserRole() {
