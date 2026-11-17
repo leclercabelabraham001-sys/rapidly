@@ -1,943 +1,898 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Anti-cache strict -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>RAPIDLY Sénégal - VTC & Logistique</title>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Leaflet CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-tailwind.config = {
-theme: {
-extend: {
-colors: {
-rapidlyRed: '#E50914',
-rapidlyRedDark: '#C00711',
-}
-}
-}
-}
-</script>
-<style>
-body {
-background-color: #F8F9FA;
-color: #111827;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-touch-action: manipulation;
-user-select: none;
-overflow: hidden;
-}
-#map {
-width: 100%;
-height: 100%;
-background-color: #E5E7EB;
-z-index: 1;
-}
-.leaflet-control-zoom, .leaflet-control-attribution { display: none !important; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.shadow-yango { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04); }
-.shadow-card { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); }
-@keyframes gps-pulse {
-0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75); }
-70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
-100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-.gps-user-dot {
-animation: gps-pulse 2s infinite;
-border-radius: 50%;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Anti-cache strict -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>RAPIDLY Sénégal - VTC & Logistique</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rapidlyRed: '#E50914',
+                        rapidlyRedDark: '#C00711',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #F8F9FA;
+            color: #111827;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            overflow: hidden;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #E5E7EB;
+            z-index: 1;
+        }
+        .leaflet-control-zoom, .leaflet-control-attribution { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .shadow-yango { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04); }
+        .shadow-card { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); }
+
+        @keyframes gps-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75); }
+            70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .gps-user-dot {
+            animation: gps-pulse 2s infinite;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased">
-<div class="max-w-md mx-auto h-screen bg-gray-100 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
-<!-- HEADER BLANC ÉPURÉ -->
-<header class="absolute top-0 left-0 right-0 p-4 z-30 flex justify-between items-center pointer-events-none">
-<div class="flex items-center gap-2 pointer-events-auto">
-<button onclick="openProfileModal()" class="w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center shadow-yango active:scale-95 transition" title="Mon Profil">
-<svg class="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-</button>
-<button onclick="goToHome()" class="w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center shadow-yango active:scale-95 transition text-gray-800" title="Retour Accueil">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-</button>
-</div>
-<!-- Logo Officiel RAPIDLY -->
-<div class="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-md p-1.5 px-3.5 rounded-2xl border border-gray-200 shadow-yango">
-<div class="w-7 h-7 rounded-lg bg-rapidlyRed flex items-center justify-center p-1 shrink-0 shadow-sm">
-<svg viewBox="0 0 100 100" class="w-full h-full">
-<path d="M 22,12 L 58,12 C 78,12 88,23 88,38 C 88,50 78,60 62,61 L 88,88 L 66,88 L 44,62 L 40,62 L 40,88 L 22,88 Z M 40,30 L 40,46 L 55,46 C 64,46 70,42 70,38 C 70,33 64,30 55,30 Z" fill="#FFFFFF" />
-</svg>
-</div>
-<span class="font-black text-sm tracking-tight text-gray-900">RAPIDLY</span>
-<span id="headerRoleBadge" class="bg-rapidlyRed/10 text-rapidlyRed text-[9px] px-1.5 py-0.5 rounded font-black">PASSAGER</span>
-</div>
-<!-- Switch Passager / Chauffeur -->
-<button id="modeToggleBtn" onclick="toggleUserRole()" class="pointer-events-auto bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-95 text-white text-xs px-3.5 py-2.5 rounded-2xl font-bold shadow-yango transition flex items-center gap-1.5">
-<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-<span id="modeBtnText">Espace Chauffeur</span>
-</button>
-</header>
-<!-- CARTE CLAIRE INTERACTIVE -->
-<div class="relative w-full flex-1">
-<div id="map"></div>
-<div id="gpsStatusPill" class="absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-yango transition-all">
-<div class="flex items-center gap-2 truncate pr-2">
-<span id="gpsDotIndicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-<span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Dakar (Mermoz / Centre)</span>
-</div>
-<span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
-</div>
-<div id="mapRouteBadge" class="hidden absolute top-20 left-4 right-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200 justify-between items-center text-gray-900 shadow-yango transition-all">
-<div class="flex items-center gap-2 truncate pr-2">
-<span class="w-2.5 h-2.5 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
-<span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route vers vous...</span>
-</div>
-<div class="flex items-center gap-1.5 shrink-0">
-<span id="routeDistanceText" class="font-extrabold text-xs text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full">En approche</span>
-</div>
-</div>
-<button onclick="locateUserExactPosition(true)" title="Ma position" class="absolute right-4 bottom-80 z-20 w-11 h-11 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-yango active:scale-95 transition">
-<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-</button>
-</div>
-<!-- 1. PAGE D'ACCUEIL PASSAGER -->
-<div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl p-5 flex flex-col gap-4 shadow-yango border-t border-gray-200">
-<div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-1"></div>
-<div onclick="openOrderModal('ville')" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-card">
-<div class="flex items-center gap-3.5">
-<div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
-<div>
-<span class="text-sm font-extrabold text-gray-900 block">Où allez-vous ?</span>
-<span id="homeCurrentPosSub" class="text-xs text-gray-500 font-medium">Départ depuis votre position actuelle...</span>
-</div>
-</div>
-<div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-<svg class="w-4 h-4 text-rapidlyRed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-</div>
-</div>
-<div class="grid grid-cols-4 gap-2.5">
-<div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 hover:border-rapidlyRed/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
-<div class="w-12 h-12 rounded-2xl bg-rapidlyRed/10 text-rapidlyRed group-hover:bg-rapidlyRed group-hover:text-white transition flex items-center justify-center">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6"/><circle cx="17" cy="17" r="2" stroke-width="2"/></svg>
-</div>
-<span class="text-xs font-bold text-gray-900">Ville</span>
-<span class="text-[9px] text-gray-500 font-semibold -mt-1">VTC Standard</span>
-</div>
-<div onclick="openOrderModal('livraison')" class="bg-gray-50 border border-gray-200 hover:border-amber-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
-<div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition flex items-center justify-center">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-</div>
-<span class="text-xs font-bold text-gray-900">Livraison</span>
-<span class="text-[9px] text-gray-500 font-semibold -mt-1">Colis Moto</span>
-</div>
-<div onclick="openOrderModal('regions')" class="bg-gray-50 border border-gray-200 hover:border-blue-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
-<div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition flex items-center justify-center">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-</div>
-<span class="text-xs font-bold text-gray-900">Régions</span>
-<span class="text-[9px] text-gray-500 font-semibold -mt-1">Interurbain</span>
-</div>
-<div onclick="openOrderModal('fret')" class="bg-gray-50 border border-gray-200 hover:border-purple-500/40 p-3 rounded-2xl flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition text-center shadow-card group">
-<div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition flex items-center justify-center">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
-</div>
-<span class="text-xs font-bold text-gray-900">Fret</span>
-<span class="text-[9px] text-gray-500 font-semibold -mt-1">Camion</span>
-</div>
-</div>
-<div class="space-y-2 pt-1">
-<span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Destinations populaires</span>
-<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-<button onclick="quickSelectFromCurrentPos('Dakar Plateau')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">📍 Vers Plateau</button>
-<button onclick="quickSelectFromCurrentPos('Les Almadies')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">📍 Vers Almadies</button>
-<button onclick="quickSelectFromCurrentPos('Sacré-Cœur 3')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">📍 Vers Sacré-Cœur 3</button>
-<button onclick="quickSelectFromCurrentPos('Aéroport AIBD')" class="bg-gray-50 border border-gray-200 hover:bg-gray-100 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-800 shrink-0 shadow-sm">✈️ Vers AIBD</button>
-</div>
-</div>
-</div>
-<!-- 2. FENÊTRE DE COMMANDE -->
-<div id="orderSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-3.5 shadow-yango border-t border-gray-200 max-h-[82vh] overflow-y-auto">
-<div class="flex justify-between items-center border-b border-gray-100 pb-2.5">
-<div class="flex items-center gap-2.5">
-<button onclick="goToHome()" class="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-</button>
-<h3 id="orderServiceTitle" class="font-black text-base text-gray-900">VTC Ville</h3>
-</div>
-<button onclick="locateUserExactPosition(true)" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-extrabold flex items-center gap-1 active:scale-95 transition">
-<span>📍 Ma position GPS</span>
-</button>
-</div>
-<div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 space-y-2.5 relative">
-<div class="flex items-center gap-3 relative">
-<span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0 ring-4 ring-emerald-500/20"></span>
-<div class="flex-1">
-<label class="text-[9px] text-emerald-600 uppercase font-extrabold block">Point de Départ (Position actuelle)</label>
-<input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" placeholder="Départ..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
-</div>
-</div>
-<div id="departSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-36 overflow-y-auto divide-y divide-gray-100 z-50"></div>
-<div class="border-t border-gray-200/70"></div>
-<div class="flex items-center gap-3 relative">
-<span class="w-3 h-3 rounded-full bg-rapidlyRed shrink-0 ring-4 ring-rapidlyRed/20"></span>
-<div class="flex-1">
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Destination (Sénégal)</label>
-<input type="text" id="orderDestInput" oninput="handleAddressInput('dest')" onfocus="handleAddressInput('dest')" placeholder="Ex: Sacré-Cœur 2, Yoff, Thiès..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
-</div>
-</div>
-<div id="destSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-40 overflow-y-auto divide-y divide-gray-100 z-50"></div>
-</div>
-<!-- TARIF FIXE AUTOMATIQUE -->
-<div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-2">
-<div class="flex justify-between items-center">
-<span id="distanceCalcInfo" class="text-xs font-bold text-gray-500">Distance estimée : -- km</span>
-<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-extrabold">Tarif fixe garanti</span>
-</div>
-<div class="text-center py-2">
-<span id="priceVal" class="text-4xl font-black text-gray-900 tracking-tight">--</span>
-<span class="text-xs text-gray-500 block font-bold mt-0.5">FCFA</span>
-</div>
-<p class="text-[11px] text-center text-gray-400 font-medium">Calculé automatiquement selon le kilométrage exact</p>
-</div>
-<div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 grid grid-cols-2 gap-2">
-<div>
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Votre Nom</label>
-<input type="text" id="clientNameInput" placeholder="Ex: Abel Leclerc" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:border-rapidlyRed">
-</div>
-<div>
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Votre Téléphone</label>
-<input type="tel" id="clientPhoneInput" placeholder="77 000 00 00" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:border-rapidlyRed">
-</div>
-</div>
-<button onclick="launchSearch()" id="confirmOrderBtn" class="w-full bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-98 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-rapidlyRed/25 text-sm uppercase tracking-wider transition">
-Commander & Diffuser aux Chauffeurs
-</button>
-</div>
-<!-- 3. ÉCRAN D'ATTENTE PASSAGER & MODE DÉMO INVESTISSEUR -->
-<div id="passengerWaitingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200 text-center">
-<div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
-<div class="w-16 h-16 rounded-full bg-rapidlyRed/10 text-rapidlyRed flex items-center justify-center mx-auto animate-pulse">
-<svg class="w-8 h-8 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
-</div>
-<div>
-<h3 class="font-black text-lg text-gray-900">Recherche d'un chauffeur...</h3>
-<p class="text-xs text-gray-500 mt-1">Diffusion de votre course aux conducteurs RAPIDLY à proximité.</p>
-</div>
-<div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left text-xs space-y-1">
-<div class="flex justify-between"><span class="text-gray-400">Trajet :</span><strong class="text-gray-900 truncate" id="waitRouteSummary">...</strong></div>
-<div class="flex justify-between"><span class="text-gray-400">Tarif fixe :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
-</div>
-<!-- BOUTON SIMULATEUR DÉMO INVESTISSEUR -->
-<button onclick="simulateDemoDriverAccept()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs uppercase shadow-md transition flex items-center justify-center gap-1.5">
-<span>⚡ [Mode Démo] Simuler l'acceptation Chauffeur</span>
-</button>
-<button onclick="cancelPassengerSearch()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl text-xs uppercase transition">
-Annuler la recherche
-</button>
-</div>
-<!-- 4. ÉCRAN DE SUIVI COURSE EN COURS -->
-<div id="passengerTrackingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-4 shadow-yango border-t border-gray-200">
-<div class="w-12 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
-<div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl">
-<div>
-<span class="text-[10px] font-black text-emerald-700 uppercase bg-emerald-200/60 px-2 py-0.5 rounded-full">Chauffeur en route</span>
-<h4 id="trackDriverName" class="font-black text-base text-gray-900 mt-1">Nom du Chauffeur</h4>
-<p id="trackDriverCar" class="text-xs text-gray-600">Véhicule • Plaque</p>
-</div>
-<a id="trackDriverPhoneBtn" href="tel:" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center transition">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-</a>
-</div>
-<div class="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs space-y-1.5">
-<div class="flex justify-between"><span class="text-gray-500">Tarif fixe :</span><strong id="trackPriceVal" class="text-rapidlyRed font-black text-sm">-- FCFA</strong></div>
-<div class="flex justify-between"><span class="text-gray-500">Destination :</span><strong id="trackDestVal" class="text-gray-900">--</strong></div>
-</div>
-<button onclick="goToHome()" class="w-full bg-gray-900 text-white py-3 rounded-xl text-xs font-bold uppercase">Retour Accueil</button>
-</div>
-<!-- 5. ESPACE CONDUCTEUR -->
-<div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-4 shadow-yango border-t border-gray-200 max-h-[85vh] overflow-y-auto">
-<div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-200">
-<div>
-<div class="flex items-center gap-2">
-<h4 class="font-extrabold text-sm text-gray-900">Espace Chauffeur RAPIDLY</h4>
-<span id="cloudSyncBadge" class="text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">SYNC LIVE</span>
-</div>
-<p class="text-xs text-emerald-600 font-bold mt-0.5">● En ligne • <strong>0% Commission</strong> (Promo Lancement)</p>
-</div>
-<button onclick="window.forceRefreshCloudOrders()" class="bg-white border border-gray-200 px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold text-gray-700 shadow-sm active:scale-95">
-🔄 Actualiser
-</button>
-</div>
-<div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-3">
-<h5 class="text-xs font-black text-gray-900 uppercase">Vos informations de Conducteur</h5>
-<div class="grid grid-cols-2 gap-2">
-<div>
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Votre Nom</label>
-<input type="text" id="driverNameInput" placeholder="Ex: Moussa Ndiaye" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:border-rapidlyRed">
-</div>
-<div>
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Téléphone Chauffeur</label>
-<input type="tel" id="driverPhoneInput" placeholder="77 450 12 34" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:border-rapidlyRed">
-</div>
-</div>
-<div>
-<label class="text-[9px] text-gray-400 uppercase font-extrabold block">Modèle Véhicule & Plaque d'Immatriculation</label>
-<input type="text" id="driverCarInput" placeholder="Ex: Peugeot 301 • DK-4820-AP" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:border-rapidlyRed">
-</div>
-<button onclick="saveDriverProfile()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold text-xs py-2.5 rounded-xl transition">
-Sauvegarder mes infos conducteur
-</button>
-</div>
-<div id="driverWorkflowContainer" class="flex flex-col gap-3"></div>
-</div>
-</div>
-<!-- SYNCHRONISATION TEMPS RÉEL CLOUD -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'rapidly-senegal-live-v1';
-let db = null;
-let auth = null;
-let currentUser = null;
-let useCloudFirestore = false;
-const NTFY_TOPIC = "rapidly_sn_vtc_orders_live_8842";
-const NTFY_BASE = ⁠https://ntfy.sh/${NTFY_TOPIC}⁠;
-async function initRealtimeMultiDevice() {
-if (typeof __firebase_config !== 'undefined') {
-try {
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-auth = getAuth(app);
-db = getFirestore(app);
-if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-const cred = await signInWithCustomToken(auth, __initial_auth_token);
-currentUser = cred.user;
-} else {
-const cred = await signInAnonymously(auth);
-currentUser = cred.user;
-}
-if (currentUser) {
-useCloudFirestore = true;
-listenFirestoreOrders();
-return;
-}
-} catch (e) {}
-}
-startUniversalRealtimeSync();
-}
-function listenFirestoreOrders() {
-if (!db || !currentUser) return;
-const ordersCol = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-onSnapshot(ordersCol, (snapshot) => {
-const list = [];
-snapshot.forEach(docSnap => {
-list.push({ docId: docSnap.id, ...docSnap.data() });
-});
-list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-window.syncIncomingOrdersFromCloud(list);
-}, () => {});
-}
-async function fetchNtfyHistory() {
-try {
-const res = await fetch(⁠${NTFY_BASE}/json?poll=1&since=2h⁠);
-if (!res.ok) return;
-const text = await res.text();
-if (!text.trim()) return;
-const lines = text.trim().split('\n');
-const ordersMap = new Map();
-for (const line of lines) {
-try {
-const packet = JSON.parse(line);
-if (packet.event === 'message' && packet.message) {
-const payload = JSON.parse(packet.message);
-if (payload.type === 'NEW_ORDER' && payload.order) {
-ordersMap.set(payload.order.id, payload.order);
-} else if (payload.type === 'ACCEPT_ORDER' && ordersMap.has(payload.orderId)) {
-const existing = ordersMap.get(payload.orderId);
-existing.status = 'accepted';
-existing.driverName = payload.driverName;
-existing.driverPhone = payload.driverPhone;
-existing.driverCar = payload.driverCar;
-existing.driverLat = payload.driverLat;
-existing.driverLng = payload.driverLng;
-ordersMap.set(payload.orderId, existing);
-} else if (payload.type === 'UPDATE_DRIVER_POS' && ordersMap.has(payload.orderId)) {
-const existing = ordersMap.get(payload.orderId);
-existing.driverLat = payload.driverLat;
-existing.driverLng = payload.driverLng;
-ordersMap.set(payload.orderId, existing);
-} else if (payload.type === 'COMPLETE_ORDER') {
-ordersMap.delete(payload.orderId);
-}
-}
-} catch (err) {}
-}
-const mergedList = Array.from(ordersMap.values()).sort((a, b) => b.id - a.id);
-window.syncIncomingOrdersFromCloud(mergedList);
-} catch (e) {}
-}
-function startUniversalRealtimeSync() {
-fetchNtfyHistory();
-try {
-const evtSource = new EventSource(⁠${NTFY_BASE}/sse⁠);
-evtSource.onmessage = () => { fetchNtfyHistory(); };
-} catch (e) {}
-setInterval(fetchNtfyHistory, 2500);
-}
-window.forceRefreshCloudOrders = function() {
-const badge = document.getElementById('cloudSyncBadge');
-if (badge) badge.innerText = "SYNCHRO...";
-fetchNtfyHistory().then(() => {
-if (badge) badge.innerText = "SYNC LIVE";
-});
-};
-window.publishOrderToCloud = async function(orderObj) {
-if (useCloudFirestore && db && currentUser) {
-const ordersCol = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-await addDoc(ordersCol, orderObj);
-return;
-}
-try {
-await fetch(NTFY_BASE, {
-method: 'POST',
-body: JSON.stringify({ type: 'NEW_ORDER', order: orderObj })
-});
-} catch (e) {}
-};
-window.updateOrderStatusInCloud = async function(orderId, newStatus, docId = null, extraData = {}) {
-if (useCloudFirestore && db && currentUser && docId) {
-const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', docId);
-if (newStatus === 'completed') {
-await deleteDoc(orderRef);
-} else {
-await updateDoc(orderRef, { status: newStatus, ...extraData });
-}
-return;
-}
-try {
-let eventType = 'ACCEPT_ORDER';
-if (newStatus === 'completed') eventType = 'COMPLETE_ORDER';
-else if (newStatus === 'update_pos') eventType = 'UPDATE_DRIVER_POS';
-await fetch(NTFY_BASE, {
-method: 'POST',
-body: JSON.stringify({ type: eventType, orderId: orderId, status: newStatus, ...extraData })
-});
-} catch (e) {}
-};
-initRealtimeMultiDevice();
-</script>
-<script>
-let map;
-let userRole = 'passager';
-let currentPrice = 1500;
-let selectedService = 'ville';
-let userMarker, destMarker, routeLine, driverLiveMarker;
-let currentGpsLocation = { name: "Mermoz Pyrotechnie, Dakar", lat: 14.7088, lng: -17.4741 };
-let selectedDepartObj = null;
-let selectedDestObj = null;
-let activeRealOrders = [];
-let currentActiveOrderId = null;
-let driverGpsBroadcastInterval = null;
-window.syncIncomingOrdersFromCloud = function(cloudOrders) {
-if (!Array.isArray(cloudOrders)) return;
-const cloudIds = new Set(cloudOrders.map(o => o.id));
-const localPending = activeRealOrders.filter(o => !cloudIds.has(o.id) && (Date.now() - o.id < 10000));
-activeRealOrders = [...localPending, ...cloudOrders];
-renderDriverOrders();
-if (currentActiveOrderId) {
-const orderInCloud = activeRealOrders.find(o => o.id === currentActiveOrderId);
-if (orderInCloud && orderInCloud.status === 'accepted') {
-triggerPassengerTrackingView(orderInCloud);
-} else if (!orderInCloud) {
-goToHome();
-}
-}
-};
-const SENEGAL_LOCATIONS = [
-{ name: "Dakar Plateau, Centre-Ville", zone: "Dakar Centre", lat: 14.6680, lng: -17.4350 },
-{ name: "Médina, Dakar", zone: "Dakar Centre", lat: 14.6820, lng: -17.4480 },
-{ name: "Gueule Tapée - Fass - Colobane", zone: "Dakar Centre", lat: 14.6910, lng: -17.4540 },
-{ name: "Fann Résidence, Dakar", zone: "Dakar Ouest", lat: 14.6890, lng: -17.4660 },
-{ name: "Point E, Dakar", zone: "Dakar Ouest", lat: 14.6960, lng: -17.4620 },
-{ name: "Mermoz Pyrotechnie, Dakar", zone: "Dakar Ouest", lat: 14.7088, lng: -17.4741 },
-{ name: "Sacré-Cœur 1, Dakar", zone: "Dakar Ouest", lat: 14.7120, lng: -17.4660 },
-{ name: "Sacré-Cœur 2, Dakar", zone: "Dakar Ouest", lat: 14.7165, lng: -17.4635 },
-{ name: "Sacré-Cœur 3, VDN Dakar", zone: "Dakar Ouest", lat: 14.7220, lng: -17.4600 },
-{ name: "Sicap Liberté 1 à 6, Dakar", zone: "Dakar Centre", lat: 14.7150, lng: -17.4520 },
-{ name: "Dieuppeul - Derklé, Dakar", zone: "Dakar Centre", lat: 14.7210, lng: -17.4480 },
-{ name: "Grand Dakar", zone: "Dakar Centre", lat: 14.7060, lng: -17.4470 },
-{ name: "HLM Dakar", zone: "Dakar Centre", lat: 14.7130, lng: -17.4410 },
-{ name: "Hann Bel-Air / Maristes", zone: "Dakar Est", lat: 14.7250, lng: -17.4320 },
-{ name: "Ouakam, Dakar", zone: "Dakar Ouest", lat: 14.7240, lng: -17.4910 },
-{ name: "Mamelles, Dakar", zone: "Dakar Ouest", lat: 14.7340, lng: -17.5030 },
-{ name: "Les Almadies, Dakar", zone: "Dakar Ouest", lat: 14.7450, lng: -17.5180 },
-{ name: "Ngor / Ngor Virage, Dakar", zone: "Dakar Ouest", lat: 14.7520, lng: -17.5120 },
-{ name: "Yoff Océan / Tonghor, Dakar", zone: "Dakar Nord", lat: 14.7610, lng: -17.4720 },
-{ name: "Yoff Aéroport LSS, Dakar", zone: "Dakar Nord", lat: 14.7460, lng: -17.4820 },
-{ name: "Ouest Foire / Nord Foire, Dakar", zone: "Dakar Nord", lat: 14.7460, lng: -17.4660 },
-{ name: "Parcelles Assainies (U1 à U26)", zone: "Dakar Nord", lat: 14.7600, lng: -17.4380 },
-{ name: "Grand Yoff, Dakar", zone: "Dakar Nord", lat: 14.7360, lng: -17.4490 },
-{ name: "Patte d'Oie, Dakar", zone: "Dakar Nord", lat: 14.7460, lng: -17.4420 },
-{ name: "Camberène, Dakar", zone: "Dakar Nord", lat: 14.7680, lng: -17.4250 },
-{ name: "Guédiawaye (Hamo, Golf, Wakhinane)", zone: "Banlieue", lat: 14.7780, lng: -17.4080 },
-{ name: "Pikine (Icotaf, Tally Boumack)", zone: "Banlieue", lat: 14.7510, lng: -17.3950 },
-{ name: "Thiaroye", zone: "Banlieue", lat: 14.7450, lng: -17.3720 },
-{ name: "Mbao", zone: "Banlieue", lat: 14.7350, lng: -17.3250 },
-{ name: "Keur Massar", zone: "Banlieue", lat: 14.7820, lng: -17.3180 },
-{ name: "Malika", zone: "Banlieue", lat: 14.7950, lng: -17.3380 },
-{ name: "Rufisque Centre", zone: "Rufisque", lat: 14.7160, lng: -17.2720 },
-{ name: "Bargny", zone: "Rufisque", lat: 14.6960, lng: -17.2280 },
-{ name: "Diamniadio (Cité Ministérielle / CICAD)", zone: "Pôle Urbain", lat: 14.7180, lng: -17.1850 },
-{ name: "Sébikotane", zone: "Rufisque", lat: 14.7450, lng: -17.1380 },
-{ name: "Aéroport International AIBD, Diass", zone: "Aéroport", lat: 14.6700, lng: -17.0700 },
-{ name: "Thiès (Centre-Ville / Gare)", zone: "Région Thiès", lat: 14.7900, lng: -16.9200 },
-{ name: "Mbour Centre", zone: "Petite Côte", lat: 14.4160, lng: -16.9600 },
-{ name: "Saly Portudal", zone: "Petite Côte", lat: 14.4400, lng: -17.0200 },
-{ name: "Somone", zone: "Petite Côte", lat: 14.4850, lng: -17.0780 },
-{ name: "Tivaouane", zone: "Région Thiès", lat: 14.9500, lng: -16.8200 },
-{ name: "Touba (Grande Mosquée)", zone: "Région Diourbel", lat: 14.8600, lng: -15.8800 },
-{ name: "Mbacké", zone: "Région Diourbel", lat: 14.7900, lng: -15.9100 },
-{ name: "Diourbel", zone: "Région Diourbel", lat: 14.6500, lng: -16.2300 },
-{ name: "Kaolack", zone: "Région Kaolack", lat: 14.1500, lng: -16.0700 },
-{ name: "Fatick", zone: "Région Fatick", lat: 14.3300, lng: -16.4100 },
-{ name: "Louga", zone: "Région Louga", lat: 15.6100, lng: -16.2200 },
-{ name: "Saint-Louis (Île / Ndar)", zone: "Région Saint-Louis", lat: 16.0200, lng: -16.5000 },
-{ name: "Richard-Toll", zone: "Région Saint-Louis", lat: 16.4600, lng: -15.7000 },
-{ name: "Tambacounda", zone: "Région Tamba", lat: 13.7700, lng: -13.6700 },
-{ name: "Ziguinchor", zone: "Casamance", lat: 12.5600, lng: -16.2700 },
-{ name: "Cap Skirring", zone: "Casamance", lat: 12.3900, lng: -16.7400 },
-{ name: "Kolda", zone: "Casamance", lat: 12.8900, lng: -14.9400 }
-];
-document.addEventListener('DOMContentLoaded', () => {
-ensureMapReady();
-loadSavedUser();
-loadSavedDriver();
-renderDriverOrders();
-locateUserExactPosition(false);
-});
-function ensureMapReady() {
-if (typeof L !== 'undefined') {
-initMap();
-} else {
-setTimeout(ensureMapReady, 150);
-}
-}
-function loadSavedUser() {
-const savedName = localStorage.getItem('rapidly_user_name');
-const savedPhone = localStorage.getItem('rapidly_user_phone');
-if (savedName) document.getElementById('clientNameInput').value = savedName;
-if (savedPhone) document.getElementById('clientPhoneInput').value = savedPhone;
-}
-function loadSavedDriver() {
-const savedDName = localStorage.getItem('rapidly_driver_name');
-const savedDPhone = localStorage.getItem('rapidly_driver_phone');
-const savedDCar = localStorage.getItem('rapidly_driver_car');
-if (savedDName) document.getElementById('driverNameInput').value = savedDName;
-if (savedDPhone) document.getElementById('driverPhoneInput').value = savedDPhone;
-if (savedDCar) document.getElementById('driverCarInput').value = savedDCar;
-}
-function saveDriverProfile() {
-const dName = document.getElementById('driverNameInput').value.trim();
-const dPhone = document.getElementById('driverPhoneInput').value.trim();
-const dCar = document.getElementById('driverCarInput').value.trim();
-if (!dName || !dPhone || !dCar) {
-alert("Veuillez remplir tous les champs (Nom, Téléphone, Véhicule & Plaque).");
-return;
-}
-localStorage.setItem('rapidly_driver_name', dName);
-localStorage.setItem('rapidly_driver_phone', dPhone);
-localStorage.setItem('rapidly_driver_car', dCar);
-alert("✅ Profil validé ! Vous pouvez maintenant voir et accepter les courses.");
-renderDriverOrders();
-}
-function openProfileModal() {
-const name = localStorage.getItem('rapidly_user_name') || 'Non renseigné';
-const phone = localStorage.getItem('rapidly_user_phone') || 'Non renseigné';
-alert(⁠Profil Utilisateur RAPIDLY :\nNom : ${name}\nTéléphone : ${phone}⁠);
-}
-function goToHome() {
-currentActiveOrderId = null;
-document.getElementById('orderSheet').classList.add('hidden');
-document.getElementById('orderSheet').classList.remove('flex');
-document.getElementById('passengerWaitingSheet').classList.add('hidden');
-document.getElementById('passengerWaitingSheet').classList.remove('flex');
-document.getElementById('passengerTrackingSheet').classList.add('hidden');
-document.getElementById('passengerTrackingSheet').classList.remove('flex');
-document.getElementById('driverSheet').classList.add('hidden');
-document.getElementById('driverSheet').classList.remove('flex');
-document.getElementById('homeSheet').classList.remove('hidden');
-document.getElementById('mapRouteBadge').classList.add('hidden');
-document.getElementById('mapRouteBadge').classList.remove('flex');
-document.getElementById('gpsStatusPill').classList.remove('hidden');
-if (userRole === 'conducteur') toggleUserRole();
-if (driverLiveMarker && map) {
-map.removeLayer(driverLiveMarker);
-driverLiveMarker = null;
-}
-if (routeLine && map) {
-map.removeLayer(routeLine);
-routeLine = null;
-}
-if (destMarker && map) {
-map.removeLayer(destMarker);
-destMarker = null;
-}
-locateUserExactPosition(true);
-if (map) setTimeout(() => { map.invalidateSize(); }, 100);
-}
-function initMap() {
-if (map) return;
-const defaultDakar = [14.7088, -17.4741];
-map = L.map('map', { zoomControl: false, attributionControl: false }).setView(defaultDakar, 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-const userIcon = L.divIcon({
-html: '<div class="gps-user-dot" style="background:#10B981; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.9);"></div>'
-});
-userMarker = L.marker(defaultDakar, { icon: userIcon }).addTo(map);
-[200, 600, 1500].forEach(delay => {
-setTimeout(() => { if (map) map.invalidateSize(); }, delay);
-});
-}
-function locateUserExactPosition(forceCenter = false) {
-const labelEl = document.getElementById('gpsAddressLabel');
-const subEl = document.getElementById('homeCurrentPosSub');
-if (currentGpsLocation) {
-selectedDepartObj = currentGpsLocation;
-document.getElementById('orderDepartInput').value = currentGpsLocation.name;
-if (labelEl) labelEl.innerText = ⁠📍 ${currentGpsLocation.name}⁠;
-if (subEl) subEl.innerText = ⁠Départ : ${currentGpsLocation.name}⁠;
-}
-if ("geolocation" in navigator) {
-navigator.geolocation.getCurrentPosition(
-(position) => {
-const lat = position.coords.latitude;
-const lng = position.coords.longitude;
-if (map && userMarker) {
-userMarker.setLatLng([lat, lng]);
-if (forceCenter) map.setView([lat, lng], 16);
-}
-fetch(⁠https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1⁠)
-.then(res => res.json())
-.then(data => {
-let formattedAddr = ⁠Position GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})⁠;
-if (data && data.address) {
-const addr = data.address;
-const road = addr.road || addr.pedestrian || addr.residential || "";
-const suburb = addr.suburb || addr.neighbourhood || "";
-const parts = [road, suburb, "Dakar"].filter(Boolean);
-if (parts.length > 0) formattedAddr = parts.slice(0, 2).join(', ');
-}
-currentGpsLocation = { name: formattedAddr, lat: lat, lng: lng };
-selectedDepartObj = currentGpsLocation;
-document.getElementById('orderDepartInput').value = formattedAddr;
-if (labelEl) labelEl.innerText = ⁠📍 ${formattedAddr}⁠;
-if (subEl) subEl.innerText = ⁠Départ : ${formattedAddr}⁠;
-})
-.catch(() => {});
-},
-() => {},
-{ enableHighAccuracy: true, timeout: 6000 }
-);
-}
-}
-function normalizeStr(str) {
-return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, " ");
-}
-function handleAddressInput(field) {
-const inputEl = field === 'depart' ? document.getElementById('orderDepartInput') : document.getElementById('orderDestInput');
-const sugBox = field === 'depart' ? document.getElementById('departSuggestions') : document.getElementById('destSuggestions');
-const query = normalizeStr(inputEl.value.trim());
-if (!query) {
-sugBox.classList.add('hidden');
-return;
-}
-const matches = SENEGAL_LOCATIONS.filter(loc => normalizeStr(loc.name).includes(query) || normalizeStr(loc.zone).includes(query));
-sugBox.innerHTML = '';
-if (field === 'depart' && currentGpsLocation) {
-const gpsDiv = document.createElement('div');
-gpsDiv.className = "p-2.5 bg-emerald-50 hover:bg-emerald-100 cursor-pointer flex justify-between items-center text-xs";
-gpsDiv.innerHTML = ⁠<span class="font-extrabold text-emerald-800">📍 Utiliser ma position GPS exacte</span>⁠;
-gpsDiv.onclick = () => { selectLocation('depart', currentGpsLocation); sugBox.classList.add('hidden'); };
-sugBox.appendChild(gpsDiv);
-}
-if (matches.length > 0) {
-matches.slice(0, 6).forEach(loc => {
-const div = document.createElement('div');
-div.className = "p-2.5 hover:bg-red-50 cursor-pointer flex justify-between items-center text-xs";
-div.innerHTML = ⁠<span class="font-bold text-gray-800">${loc.name}</span><span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded">${loc.zone}</span>⁠;
-div.onclick = () => { selectLocation(field, loc); sugBox.classList.add('hidden'); };
-sugBox.appendChild(div);
-});
-sugBox.classList.remove('hidden');
-if (field === 'depart') selectedDepartObj = matches[0];
-else selectedDestObj = matches[0];
-recalculateDynamicFare();
-}
-}
-function selectLocation(field, locObj) {
-if (field === 'depart') {
-selectedDepartObj = locObj;
-document.getElementById('orderDepartInput').value = locObj.name;
-} else {
-selectedDestObj = locObj;
-document.getElementById('orderDestInput').value = locObj.name;
-}
-recalculateDynamicFare();
-}
-function recalculateDynamicFare() {
-if (!selectedDepartObj || !selectedDestObj) return;
-const R = 6371;
-const dLat = (selectedDestObj.lat - selectedDepartObj.lat) * Math.PI / 180;
-const dLon = (selectedDestObj.lng - selectedDepartObj.lng) * Math.PI / 180;
-const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-Math.cos(selectedDepartObj.lat * Math.PI / 180) * Math.cos(selectedDestObj.lat * Math.PI / 180) *
-Math.sin(dLon/2) * Math.sin(dLon/2);
-const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-const distKm = Math.max(1.2, (R * c * 1.25)).toFixed(1);
-let basePrice = 1000, kmRate = 220;
-if (selectedService === 'livraison') { basePrice = 800; kmRate = 130; }
-else if (selectedService === 'regions') { basePrice = 3000; kmRate = 250; }
-else if (selectedService === 'fret') { basePrice = 8000; kmRate = 900; }
-let calculated = Math.round((basePrice + parseFloat(distKm) * kmRate) / 100) * 100;
-currentPrice = Math.max(1000, calculated);
-document.getElementById('priceVal').innerText = currentPrice.toLocaleString('fr-FR');
-document.getElementById('distanceCalcInfo').innerText = ⁠Distance estimée : ${distKm} km⁠;
-drawRouteOnMap(
-[selectedDepartObj.lat, selectedDepartObj.lng],
-[selectedDestObj.lat, selectedDestObj.lng],
-distKm,
-selectedDepartObj.name.split(',')[0],
-selectedDestObj.name.split(',')[0]
-);
-}
-function drawRouteOnMap(startCoords, endCoords, distKm, depName, destName) {
-if (!map) return;
-if (userMarker) map.removeLayer(userMarker);
-if (destMarker) map.removeLayer(destMarker);
-if (routeLine) map.removeLayer(routeLine);
-const startIcon = L.divIcon({ html: '<div class="gps-user-dot" style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(16,185,129,0.8);"></div>' });
-userMarker = L.marker(startCoords, { icon: startIcon }).addTo(map);
-const destIcon = L.divIcon({ html: '<div style="background:#E50914; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 12px rgba(229,9,20,0.9);"></div>' });
-destMarker = L.marker(endCoords, { icon: destIcon }).addTo(map);
-routeLine = L.polyline([startCoords, endCoords], { color: '#E50914', weight: 5, dashArray: '6, 6' }).addTo(map);
-map.fitBounds(routeLine.getBounds(), { padding: [55, 55] });
-document.getElementById('gpsStatusPill').classList.add('hidden');
-}
-function openOrderModal(serviceType) {
-selectedService = serviceType;
-if (currentGpsLocation && !document.getElementById('orderDepartInput').value) {
-selectedDepartObj = currentGpsLocation;
-document.getElementById('orderDepartInput').value = currentGpsLocation.name;
-}
-document.getElementById('homeSheet').classList.add('hidden');
-document.getElementById('orderSheet').classList.remove('hidden');
-document.getElementById('orderSheet').classList.add('flex');
-if (selectedDepartObj && selectedDestObj) recalculateDynamicFare();
-if (map) setTimeout(() => { map.invalidateSize(); }, 100);
-}
-function quickSelectFromCurrentPos(destQuery) {
-if (currentGpsLocation) {
-selectedDepartObj = currentGpsLocation;
-document.getElementById('orderDepartInput').value = currentGpsLocation.name;
-}
-const dest = SENEGAL_LOCATIONS.find(l => normalizeStr(l.name).includes(normalizeStr(destQuery)));
-if (dest) {
-selectedDestObj = dest;
-document.getElementById('orderDestInput').value = dest.name;
-}
-openOrderModal('ville');
-}
-function launchSearch() {
-const depName = document.getElementById('orderDepartInput').value.trim();
-const destName = document.getElementById('orderDestInput').value.trim();
-const clientName = document.getElementById('clientNameInput').value.trim();
-const clientPhone = document.getElementById('clientPhoneInput').value.trim();
-if (!depName || !destName) { alert("Veuillez renseigner le départ et la destination."); return; }
-if (!clientName || !clientPhone) { alert("Veuillez entrer votre nom et téléphone."); return; }
-localStorage.setItem('rapidly_user_name', clientName);
-localStorage.setItem('rapidly_user_phone', clientPhone);
-const newOrder = {
-id: Date.now(),
-createdAt: Date.now(),
-clientName: clientName,
-clientPhone: clientPhone,
-depart: depName,
-destination: destName,
-price: currentPrice,
-distance: "Calculée",
-service: selectedService.toUpperCase(),
-status: 'pending'
-};
-currentActiveOrderId = newOrder.id;
-activeRealOrders.unshift(newOrder);
-renderDriverOrders();
-if (window.publishOrderToCloud) window.publishOrderToCloud(newOrder);
-document.getElementById('orderSheet').classList.add('hidden');
-document.getElementById('orderSheet').classList.remove('flex');
-document.getElementById('passengerWaitingSheet').classList.remove('hidden');
-document.getElementById('passengerWaitingSheet').classList.add('flex');
-document.getElementById('waitRouteSummary').innerText = ⁠${depName} ➔ ${destName}⁠;
-document.getElementById('waitPriceSummary').innerText = ⁠${currentPrice.toLocaleString('fr-FR')} FCFA⁠;
-}
-// SIMULATEUR DÉMO INVESTISSEUR (Routage instantané sans attendre)
-function simulateDemoDriverAccept() {
-if (activeRealOrders.length > 0) {
-const latestOrder = activeRealOrders[0];
-latestOrder.driverName = "Moussa Ndiaye";
-latestOrder.driverPhone = "+221 77 450 12 34";
-latestOrder.driverCar = "Peugeot 301 • DK-4820-AP";
-latestOrder.driverLat = currentGpsLocation ? currentGpsLocation.lat : 14.7088;
-latestOrder.driverLng = currentGpsLocation ? currentGpsLocation.lng : -17.4741;
-latestOrder.status = 'accepted';
-triggerPassengerTrackingView(latestOrder);
-} else {
-alert("Veuillez d'abord lancer une commande passager !");
-}
-}
-function cancelPassengerSearch() {
-goToHome();
-}
-function triggerPassengerTrackingView(order) {
-document.getElementById('passengerWaitingSheet').classList.add('hidden');
-document.getElementById('passengerWaitingSheet').classList.remove('flex');
-document.getElementById('homeSheet').classList.add('hidden');
-document.getElementById('orderSheet').classList.add('hidden');
-document.getElementById('passengerTrackingSheet').classList.remove('hidden');
-document.getElementById('passengerTrackingSheet').classList.add('flex');
-document.getElementById('trackDriverName').innerText = order.driverName || "Chauffeur RAPIDLY";
-document.getElementById('trackDriverCar').innerText = order.driverCar || "Véhicule VTC";
-document.getElementById('trackDriverPhoneBtn').href = ⁠tel:${order.driverPhone || '770000000'}⁠;
-document.getElementById('trackPriceVal').innerText = ⁠${order.price.toLocaleString('fr-FR')} FCFA⁠;
-document.getElementById('trackDestVal').innerText = order.destination;
-if (order.driverLat && order.driverLng) {
-updateDriverPositionOnPassengerMap(order.driverLat, order.driverLng);
-}
-}
-function updateDriverPositionOnPassengerMap(lat, lng) {
-if (!map) return;
-const driverCoords = [lat, lng];
-if (!driverLiveMarker) {
-const driverIcon = L.divIcon({
-html: '<div style="background:#E50914; width:30px; height:30px; border-radius:50%; border:3px solid white; box-shadow:0 0 15px rgba(229,9,20,0.9); display:flex; align-items:center; justify-content:center; font-size:15px;">🚖</div>',
-className: 'driver-live-icon'
-});
-driverLiveMarker = L.marker(driverCoords, { icon: driverIcon }).addTo(map);
-} else {
-driverLiveMarker.setLatLng(driverCoords);
-map.panTo(driverCoords);
-}
-const badge = document.getElementById('mapRouteBadge');
-badge.classList.remove('hidden');
-badge.classList.add('flex');
-document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en approche vers vous...";
-document.getElementById('routeDistanceText').innerText = "En route";
-}
-function renderDriverOrders() {
-const container = document.getElementById('driverWorkflowContainer');
-if (!container) return;
-const driverName = localStorage.getItem('rapidly_driver_name');
-const driverPhone = localStorage.getItem('rapidly_driver_phone');
-const driverCar = localStorage.getItem('rapidly_driver_car');
-if (!driverName || !driverPhone || !driverCar) {
-container.innerHTML = ⁠<div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-center space-y-2"> <p class="text-xs font-black text-amber-800">⚠️ Profil Chauffeur Incomplet</p> <p class="text-[11px] text-amber-700">Vous devez obligatoirement remplir et sauvegarder vos informations professionnelles (Nom, Téléphone, Véhicule) ci-dessus pour accéder aux commandes en direct.</p> </div>⁠;
-return;
-}
-if (activeRealOrders.length === 0) {
-container.innerHTML = ⁠<div class="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-6 text-center text-xs text-gray-500">En attente de commandes en direct...</div>⁠;
-return;
-}
-let html = ⁠<span class="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Commandes en direct (${activeRealOrders.length})</span>⁠;
-activeRealOrders.forEach(order => {
-if (order.status === 'accepted') {
-html += ⁠<div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-3 shadow-card"> <div class="flex items-center justify-between"> <span class="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full uppercase">Course Acceptée</span> <span class="text-xs font-extrabold text-gray-700">${order.price.toLocaleString('fr-FR')} FCFA</span> </div> <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2 text-xs"> <div class="flex justify-between"><strong>Client : ${order.clientName}</strong><a href="tel:${order.clientPhone}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold">Appeler</a></div> <div>Départ : ${order.depart}</div> <div>Arrivée : ${order.destination}</div> </div> <button onclick="completeRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-gray-900 text-white text-xs py-3 rounded-xl font-extrabold uppercase">Terminer la course</button> </div>⁠;
-} else {
-html += ⁠<div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-3 shadow-sm"> <div> <span class="text-[10px] bg-rapidlyRed/10 text-rapidlyRed px-2 py-0.5 rounded font-extrabold">${order.service}</span> <h5 class="font-bold text-sm text-gray-900 mt-1">${order.clientName}</h5> <p class="text-xs text-gray-500">${order.depart} &rarr; ${order.destination}</p> </div> <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200"> <span class="text-xs text-gray-500">Tarif fixe :</span> <span class="text-sm font-black text-rapidlyRed">${order.price.toLocaleString('fr-FR')} FCFA</span> </div> <div class="text-[10px] text-emerald-600 font-bold text-right">Commission : 0% (Promo Lancement)</div> <button onclick="acceptRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-rapidlyRed text-white text-xs py-3.5 rounded-xl font-extrabold uppercase">Accepter la course</button> </div>⁠;
-}
-});
-container.innerHTML = html;
-}
-function acceptRealOrder(orderId, docId) {
-const driverName = localStorage.getItem('rapidly_driver_name');
-const driverPhone = localStorage.getItem('rapidly_driver_phone');
-const driverCar = localStorage.getItem('rapidly_driver_car');
-if (!driverName || !driverPhone || !driverCar) {
-alert("Action bloquée : Veuillez enregistrer vos informations professionnelles de chauffeur !");
-return;
-}
-const order = activeRealOrders.find(o => o.id === orderId);
-if (order) {
-order.status = 'accepted';
-let startLat = 14.7088, startLng = -17.4741;
-if (currentGpsLocation) {
-startLat = currentGpsLocation.lat;
-startLng = currentGpsLocation.lng;
-}
-order.driverName = driverName;
-order.driverPhone = driverPhone;
-order.driverCar = driverCar;
-order.driverLat = startLat;
-order.driverLng = startLng;
-renderDriverOrders();
-if (window.updateOrderStatusInCloud) {
-window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverName, driverPhone, driverCar, driverLat: startLat, driverLng: startLng });
-}
-if (driverGpsBroadcastInterval) clearInterval(driverGpsBroadcastInterval);
-driverGpsBroadcastInterval = setInterval(() => {
-if ("geolocation" in navigator) {
-navigator.geolocation.getCurrentPosition((pos) => {
-const dLat = pos.coords.latitude;
-const dLng = pos.coords.longitude;
-order.driverLat = dLat;
-order.driverLng = dLng;
-if (window.updateOrderStatusInCloud) {
-window.updateOrderStatusInCloud(orderId, 'update_pos', docId || null, { driverLat: dLat, driverLng: dLng });
-}
-}, () => {}, { enableHighAccuracy: true });
-}
-}, 2000);
-alert("Course acceptée ! Vos vraies informations ont été transmises au client.");
-}
-}
-function completeRealOrder(orderId, docId) {
-if (driverGpsBroadcastInterval) clearInterval(driverGpsBroadcastInterval);
-activeRealOrders = activeRealOrders.filter(o => o.id !== orderId);
-renderDriverOrders();
-if (window.updateOrderStatusInCloud) {
-window.updateOrderStatusInCloud(orderId, 'completed', docId || null);
-}
-alert("Course clôturée !");
-}
-function toggleUserRole() {
-userRole = userRole === 'passager' ? 'conducteur' : 'passager';
-const btnText = document.getElementById('modeBtnText');
-const roleBadge = document.getElementById('headerRoleBadge');
-if (userRole === 'conducteur') {
-btnText.innerText = 'Passager';
-roleBadge.innerText = 'CHAUFFEUR';
-document.getElementById('homeSheet').classList.add('hidden');
-document.getElementById('orderSheet').classList.add('hidden');
-document.getElementById('passengerWaitingSheet').classList.add('hidden');
-document.getElementById('passengerTrackingSheet').classList.add('hidden');
-document.getElementById('driverSheet').classList.remove('hidden');
-document.getElementById('driverSheet').classList.add('flex');
-renderDriverOrders();
-} else {
-btnText.innerText = 'Espace Chauffeur';
-roleBadge.innerText = 'PASSAGER';
-document.getElementById('driverSheet').classList.add('hidden');
-document.getElementById('driverSheet').classList.remove('flex');
-document.getElementById('homeSheet').classList.remove('hidden');
-}
-if (map) setTimeout(() => { map.invalidateSize(); }, 100);
-}
-</script>
+
+    <div class="max-w-md mx-auto h-screen bg-gray-100 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
+        
+        <!-- HEADER ÉPURÉ ET NON COUPÉ -->
+        <header class="absolute top-0 left-0 right-0 p-3 z-30 flex justify-between items-center pointer-events-none bg-gradient-to-b from-black/40 via-black/10 to-transparent">
+            <!-- Boutons Gauche (Accueil & Profil) -->
+            <div class="flex items-center gap-1.5 pointer-events-auto">
+                <button onclick="goToHome()" class="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center shadow-md active:scale-95 transition text-gray-800" title="Retour Accueil">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </button>
+                <button onclick="openProfileModal()" class="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center shadow-md active:scale-95 transition text-gray-800" title="Mon Profil">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </button>
+            </div>
+
+            <!-- Logo Central -->
+            <div class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md py-1 px-2.5 rounded-xl border border-gray-200 shadow-md">
+                <div class="w-5 h-5 rounded bg-rapidlyRed flex items-center justify-center p-0.5 shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M 22,12 L 58,12 C 78,12 88,23 88,38 C 88,50 78,60 62,61 L 88,88 L 66,88 L 44,62 L 40,62 L 40,88 L 22,88 Z M 40,30 L 40,46 L 55,46 C 64,46 70,42 70,38 C 70,33 64,30 55,30 Z" fill="#FFFFFF" />
+                    </svg>
+                </div>
+                <span class="font-black text-xs tracking-tight text-gray-900">RAPIDLY</span>
+            </div>
+
+            <!-- Bouton Espace Chauffeur (Bien visible) -->
+            <button id="modeToggleBtn" onclick="toggleUserRole()" class="pointer-events-auto bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-95 text-white text-[11px] px-3 py-2 rounded-xl font-bold shadow-lg transition shrink-0">
+                <span id="modeBtnText">Chauffeur</span>
+            </button>
+        </header>
+
+        <!-- CARTE CLAIRE INTERACTIVE AVEC HAUTEUR GARANTIE -->
+        <div class="relative w-full h-[42vh] shrink-0">
+            <div id="map"></div>
+
+            <div id="gpsStatusPill" class="absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2 px-3 rounded-xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-md">
+                <div class="flex items-center gap-2 truncate pr-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Dakar (Mermoz / Centre)</span>
+                </div>
+                <span class="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
+            </div>
+
+            <div id="mapRouteBadge" class="hidden absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-gray-200 justify-between items-center text-gray-900 shadow-md">
+                <div class="flex items-center gap-2 truncate pr-2">
+                    <span class="w-2 h-2 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
+                    <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route...</span>
+                </div>
+                <span id="routeDistanceText" class="font-extrabold text-[11px] text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full shrink-0">En route</span>
+            </div>
+
+            <button onclick="locateUserExactPosition(true)" title="Ma position" class="absolute right-3 bottom-3 z-20 w-10 h-10 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-md active:scale-95 transition">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+        </div>
+
+        <!-- 1. PAGE D'ACCUEIL PASSAGER -->
+        <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl p-4 flex flex-col gap-3 shadow-yango border-t border-gray-200 flex-1">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto -mt-1"></div>
+
+            <div onclick="openOrderModal('ville')" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-card">
+                <div class="flex items-center gap-3">
+                    <div class="w-3.5 h-3.5 rounded-full bg-rapidlyRed ring-4 ring-rapidlyRed/20"></div>
+                    <div>
+                        <span class="text-sm font-extrabold text-gray-900 block">Où allez-vous ?</span>
+                        <span id="homeCurrentPosSub" class="text-xs text-gray-500 font-medium">Départ depuis votre position actuelle...</span>
+                    </div>
+                </div>
+                <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                    <svg class="w-4 h-4 text-rapidlyRed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2">
+                <div onclick="openOrderModal('ville')" class="bg-gray-50 border border-gray-200 p-2.5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-10 h-10 rounded-xl bg-rapidlyRed/10 text-rapidlyRed flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17h6"/><circle cx="17" cy="17" r="2" stroke-width="2"/></svg>
+                    </div>
+                    <span class="text-[11px] font-bold text-gray-900">Ville</span>
+                    <span class="text-[8px] text-gray-500 font-semibold -mt-1">VTC Standard</span>
+                </div>
+                <div onclick="openOrderModal('livraison')" class="bg-gray-50 border border-gray-200 p-2.5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    </div>
+                    <span class="text-[11px] font-bold text-gray-900">Livraison</span>
+                    <span class="text-[8px] text-gray-500 font-semibold -mt-1">Colis Moto</span>
+                </div>
+                <div onclick="openOrderModal('regions')" class="bg-gray-50 border border-gray-200 p-2.5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    </div>
+                    <span class="text-[11px] font-bold text-gray-900">Régions</span>
+                    <span class="text-[8px] text-gray-500 font-semibold -mt-1">Interurbain</span>
+                </div>
+                <div onclick="openOrderModal('fret')" class="bg-gray-50 border border-gray-200 p-2.5 rounded-2xl flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition text-center shadow-card group">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+                    </div>
+                    <span class="text-[11px] font-bold text-gray-900">Fret</span>
+                    <span class="text-[8px] text-gray-500 font-semibold -mt-1">Camion</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 pt-1">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Destinations populaires</span>
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button onclick="quickSelectFromCurrentPos('Dakar Plateau')" class="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 shrink-0">📍 Vers Plateau</button>
+                    <button onclick="quickSelectFromCurrentPos('Les Almadies')" class="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 shrink-0">📍 Vers Almadies</button>
+                    <button onclick="quickSelectFromCurrentPos('Sacré-Cœur 3')" class="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 shrink-0">📍 Vers Sacré-Cœur 3</button>
+                    <button onclick="quickSelectFromCurrentPos('Aéroport AIBD')" class="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-800 shrink-0">✈️ Vers AIBD</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. FENÊTRE DE COMMANDE -->
+        <div id="orderSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-3 shadow-yango border-t border-gray-200 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                <div class="flex items-center gap-2">
+                    <button onclick="goToHome()" class="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    </button>
+                    <h3 id="orderServiceTitle" class="font-black text-sm text-gray-900">VTC Ville</h3>
+                </div>
+                <button onclick="locateUserExactPosition(true)" class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-full font-extrabold flex items-center gap-1">
+                    <span>📍 GPS Exact</span>
+                </button>
+            </div>
+
+            <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 space-y-2 relative">
+                <div class="flex items-center gap-2.5 relative">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 ring-4 ring-emerald-500/20"></span>
+                    <div class="flex-1">
+                        <label class="text-[9px] text-emerald-600 uppercase font-extrabold block">Départ</label>
+                        <input type="text" id="orderDepartInput" oninput="handleAddressInput('depart')" onfocus="handleAddressInput('depart')" placeholder="Départ..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
+                    </div>
+                </div>
+                <div id="departSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-36 overflow-y-auto divide-y divide-gray-100 z-50"></div>
+
+                <div class="border-t border-gray-200/70"></div>
+
+                <div class="flex items-center gap-2.5 relative">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rapidlyRed shrink-0 ring-4 ring-rapidlyRed/20"></span>
+                    <div class="flex-1">
+                        <label class="text-[9px] text-gray-400 uppercase font-extrabold block">Destination</label>
+                        <input type="text" id="orderDestInput" oninput="handleAddressInput('dest')" onfocus="handleAddressInput('dest')" placeholder="Ex: Sacré-Cœur 2, Yoff..." class="w-full bg-transparent text-xs focus:outline-none text-gray-900 font-bold">
+                    </div>
+                </div>
+                <div id="destSuggestions" class="hidden bg-white border border-gray-200 rounded-xl shadow-xl max-h-40 overflow-y-auto divide-y divide-gray-100 z-50"></div>
+            </div>
+
+            <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 flex flex-col gap-1.5 text-center">
+                <span id="distanceCalcInfo" class="text-xs font-bold text-gray-500">Distance estimée : -- km</span>
+                <span id="priceVal" class="text-3xl font-black text-gray-900 tracking-tight">--</span>
+                <span class="text-[11px] text-gray-500 font-bold">FCFA (Tarif fixe garanti)</span>
+            </div>
+
+            <div class="bg-gray-50 p-2.5 rounded-2xl border border-gray-200 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[8px] text-gray-400 uppercase font-extrabold block">Votre Nom</label>
+                    <input type="text" id="clientNameInput" placeholder="Ex: Abel Leclerc" class="w-full bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-900 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-[8px] text-gray-400 uppercase font-extrabold block">Téléphone</label>
+                    <input type="tel" id="clientPhoneInput" placeholder="77 000 00 00" class="w-full bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-900 focus:outline-none">
+                </div>
+            </div>
+
+            <button onclick="launchSearch()" id="confirmOrderBtn" class="w-full bg-rapidlyRed hover:bg-rapidlyRedDark text-white font-extrabold py-3 rounded-2xl shadow-md text-xs uppercase tracking-wider transition">
+                Commander &amp; Diffuser
+            </button>
+        </div>
+
+        <!-- 3. ÉCRAN D'ATTENTE & DÉMO -->
+        <div id="passengerWaitingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-6 flex-col gap-3 shadow-yango border-t border-gray-200 text-center">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
+            <div class="w-14 h-14 rounded-full bg-rapidlyRed/10 text-rapidlyRed flex items-center justify-center mx-auto animate-pulse">
+                <svg class="w-7 h-7 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+            </div>
+            <div>
+                <h3 class="font-black text-base text-gray-900">Recherche d'un chauffeur...</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Diffusion de votre course aux conducteurs à proximité.</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 text-left text-xs space-y-1">
+                <div class="flex justify-between"><span class="text-gray-400">Trajet :</span><strong class="text-gray-900 truncate" id="waitRouteSummary">...</strong></div>
+                <div class="flex justify-between"><span class="text-gray-400">Tarif :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
+            </div>
+            <button onclick="simulateDemoDriverAccept()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow-md transition">
+                ⚡ [Mode Démo] Simuler l'acceptation Chauffeur
+            </button>
+            <button onclick="goToHome()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl text-xs uppercase transition">
+                Annuler
+            </button>
+        </div>
+
+        <!-- 4. SUIVI DE COURSE -->
+        <div id="passengerTrackingSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-5 flex-col gap-3 shadow-yango border-t border-gray-200">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto -mt-2"></div>
+            <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
+                <div>
+                    <span class="text-[9px] font-black text-emerald-700 uppercase bg-emerald-200/60 px-2 py-0.5 rounded-full">Chauffeur en route</span>
+                    <h4 id="trackDriverName" class="font-black text-sm text-gray-900 mt-1">Nom Chauffeur</h4>
+                    <p id="trackDriverCar" class="text-xs text-gray-600">Véhicule</p>
+                </div>
+                <a id="trackDriverPhoneBtn" href="tel:" class="bg-emerald-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                </a>
+            </div>
+            <button onclick="goToHome()" class="w-full bg-gray-900 text-white py-3 rounded-xl text-xs font-bold uppercase">Retour Accueil</button>
+        </div>
+
+        <!-- 5. ESPACE CHAUFFEUR -->
+        <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-4 flex-col gap-3 shadow-yango border-t border-gray-200 max-h-[85vh] overflow-y-auto flex-1">
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-200">
+                <div>
+                    <h4 class="font-extrabold text-xs text-gray-900">Espace Chauffeur RAPIDLY</h4>
+                    <p class="text-[11px] text-emerald-600 font-bold">● En ligne • 0% Commission</p>
+                </div>
+                <button onclick="window.forceRefreshCloudOrders()" class="bg-white border border-gray-200 px-2.5 py-1 rounded-xl text-[10px] font-extrabold text-gray-700">Actualiser</button>
+            </div>
+
+            <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200 space-y-2">
+                <h5 class="text-[11px] font-black text-gray-900 uppercase">Configuration Conducteur</h5>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="driverNameInput" placeholder="Votre Nom" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-bold text-gray-900">
+                    <input type="tel" id="driverPhoneInput" placeholder="Téléphone" class="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-bold text-gray-900">
+                </div>
+                <input type="text" id="driverCarInput" placeholder="Véhicule & Plaque (Ex: Peugeot 301 • DK-4820-AP)" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-bold text-gray-900">
+                <button onclick="saveDriverProfile()" class="w-full bg-gray-900 text-white font-bold text-xs py-2 rounded-xl">Sauvegarder</button>
+            </div>
+
+            <div id="driverWorkflowContainer" class="flex flex-col gap-2"></div>
+        </div>
+
+    </div>
+
+    <!-- SYNCHRONISATION TEMPS RÉEL CLOUD -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rapidly-senegal-live-v1';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let useCloudFirestore = false;
+
+        const NTFY_TOPIC = "rapidly_sn_vtc_orders_live_8842";
+        const NTFY_BASE = `https://ntfy.sh/${NTFY_TOPIC}`;
+
+        async function initRealtimeMultiDevice() {
+            if (typeof __firebase_config !== 'undefined') {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        currentUser = cred.user;
+                    } else {
+                        const cred = await signInAnonymously(auth);
+                        currentUser = cred.user;
+                    }
+
+                    if (currentUser) {
+                        useCloudFirestore = true;
+                        listenFirestoreOrders();
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            startUniversalRealtimeSync();
+        }
+
+        function listenFirestoreOrders() {
+            if (!db || !currentUser) return;
+            const ordersCol = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+            onSnapshot(ordersCol, (snapshot) => {
+                const list = [];
+                snapshot.forEach(docSnap => {
+                    list.push({ docId: docSnap.id, ...docSnap.data() });
+                });
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                window.syncIncomingOrdersFromCloud(list);
+            }, () => {});
+        }
+
+        async function fetchNtfyHistory() {
+            try {
+                const res = await fetch(`${NTFY_BASE}/json?poll=1&since=2h`);
+                if (!res.ok) return;
+                const text = await res.text();
+                if (!text.trim()) return;
+
+                const lines = text.trim().split('\n');
+                const ordersMap = new Map();
+
+                for (const line of lines) {
+                    try {
+                        const packet = JSON.parse(line);
+                        if (packet.event === 'message' && packet.message) {
+                            const payload = JSON.parse(packet.message);
+                            if (payload.type === 'NEW_ORDER' && payload.order) {
+                                ordersMap.set(payload.order.id, payload.order);
+                            } else if (payload.type === 'ACCEPT_ORDER' && ordersMap.has(payload.orderId)) {
+                                const existing = ordersMap.get(payload.orderId);
+                                existing.status = 'accepted';
+                                existing.driverName = payload.driverName;
+                                existing.driverPhone = payload.driverPhone;
+                                existing.driverCar = payload.driverCar;
+                                existing.driverLat = payload.driverLat;
+                                existing.driverLng = payload.driverLng;
+                                ordersMap.set(payload.orderId, existing);
+                            } else if (payload.type === 'COMPLETE_ORDER') {
+                                ordersMap.delete(payload.orderId);
+                            }
+                        }
+                    } catch (err) {}
+                }
+
+                const mergedList = Array.from(ordersMap.values()).sort((a, b) => b.id - a.id);
+                window.syncIncomingOrdersFromCloud(mergedList);
+            } catch (e) {}
+        }
+
+        function startUniversalRealtimeSync() {
+            fetchNtfyHistory();
+            try {
+                const evtSource = new EventSource(`${NTFY_BASE}/sse`);
+                evtSource.onmessage = () => { fetchNtfyHistory(); };
+            } catch (e) {}
+            setInterval(fetchNtfyHistory, 2500);
+        }
+
+        window.forceRefreshCloudOrders = function() {
+            fetchNtfyHistory();
+        };
+
+        window.publishOrderToCloud = async function(orderObj) {
+            if (useCloudFirestore && db && currentUser) {
+                const ordersCol = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+                await addDoc(ordersCol, orderObj);
+                return;
+            }
+            try {
+                await fetch(NTFY_BASE, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'NEW_ORDER', order: orderObj })
+                });
+            } catch (e) {}
+        };
+
+        window.updateOrderStatusInCloud = async function(orderId, newStatus, docId = null, extraData = {}) {
+            if (useCloudFirestore && db && currentUser && docId) {
+                const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', docId);
+                if (newStatus === 'completed') await deleteDoc(orderRef);
+                else await updateDoc(orderRef, { status: newStatus, ...extraData });
+                return;
+            }
+            try {
+                let eventType = 'ACCEPT_ORDER';
+                if (newStatus === 'completed') eventType = 'COMPLETE_ORDER';
+
+                await fetch(NTFY_BASE, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: eventType, orderId: orderId, status: newStatus, ...extraData })
+                });
+            } catch (e) {}
+        };
+
+        initRealtimeMultiDevice();
+    </script>
+
+    <script>
+        let map;
+        let userRole = 'passager';
+        let currentPrice = 1500;
+        let selectedService = 'ville';
+        let userMarker, destMarker, routeLine, driverLiveMarker;
+        let currentGpsLocation = { name: "Mermoz Pyrotechnie, Dakar", lat: 14.7088, lng: -17.4741 };
+        let selectedDepartObj = null;
+        let selectedDestObj = null;
+        let activeRealOrders = [];
+        let currentActiveOrderId = null;
+        let driverGpsBroadcastInterval = null;
+
+        window.syncIncomingOrdersFromCloud = function(cloudOrders) {
+            if (!Array.isArray(cloudOrders)) return;
+            const cloudIds = new Set(cloudOrders.map(o => o.id));
+            const localPending = activeRealOrders.filter(o => !cloudIds.has(o.id) && (Date.now() - o.id < 10000));
+            activeRealOrders = [...localPending, ...cloudOrders];
+            renderDriverOrders();
+
+            if (currentActiveOrderId) {
+                const orderInCloud = activeRealOrders.find(o => o.id === currentActiveOrderId);
+                if (orderInCloud && orderInCloud.status === 'accepted') {
+                    triggerPassengerTrackingView(orderInCloud);
+                } else if (!orderInCloud) {
+                    goToHome();
+                }
+            }
+        };
+
+        const SENEGAL_LOCATIONS = [
+            { name: "Dakar Plateau, Centre-Ville", zone: "Dakar Centre", lat: 14.6680, lng: -17.4350 },
+            { name: "Médina, Dakar", zone: "Dakar Centre", lat: 14.6820, lng: -17.4480 },
+            { name: "Fann Résidence, Dakar", zone: "Dakar Ouest", lat: 14.6890, lng: -17.4660 },
+            { name: "Point E, Dakar", zone: "Dakar Ouest", lat: 14.6960, lng: -17.4620 },
+            { name: "Mermoz Pyrotechnie, Dakar", zone: "Dakar Ouest", lat: 14.7088, lng: -17.4741 },
+            { name: "Sacré-Cœur 1, Dakar", zone: "Dakar Ouest", lat: 14.7120, lng: -17.4660 },
+            { name: "Sacré-Cœur 2, Dakar", zone: "Dakar Ouest", lat: 14.7165, lng: -17.4635 },
+            { name: "Sacré-Cœur 3, VDN Dakar", zone: "Dakar Ouest", lat: 14.7220, lng: -17.4600 },
+            { name: "Ouakam, Dakar", zone: "Dakar Ouest", lat: 14.7240, lng: -17.4910 },
+            { name: "Mamelles, Dakar", zone: "Dakar Ouest", lat: 14.7340, lng: -17.5030 },
+            { name: "Les Almadies, Dakar", zone: "Dakar Ouest", lat: 14.7450, lng: -17.5180 },
+            { name: "Ngor / Ngor Virage, Dakar", zone: "Dakar Ouest", lat: 14.7520, lng: -17.5120 },
+            { name: "Yoff Océan / Tonghor, Dakar", zone: "Dakar Nord", lat: 14.7610, lng: -17.4720 },
+            { name: "Aéroport International AIBD, Diass", zone: "Aéroport", lat: 14.6700, lng: -17.0700 },
+            { name: "Thiès (Centre-Ville / Gare)", zone: "Région Thiès", lat: 14.7900, lng: -16.9200 },
+            { name: "Mbour Centre", zone: "Petite Côte", lat: 14.4160, lng: -16.9600 },
+            { name: "Saly Portudal", zone: "Petite Côte", lat: 14.4400, lng: -17.0200 },
+            { name: "Saint-Louis (Île / Ndar)", zone: "Région Saint-Louis", lat: 16.0200, lng: -16.5000 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ensureMapReady();
+            loadSavedUser();
+            loadSavedDriver();
+            renderDriverOrders();
+            locateUserExactPosition(false);
+        });
+
+        function ensureMapReady() {
+            if (typeof L !== 'undefined') {
+                initMap();
+            } else {
+                setTimeout(ensureMapReady, 100);
+            }
+        }
+
+        function loadSavedUser() {
+            const savedName = localStorage.getItem('rapidly_user_name');
+            const savedPhone = localStorage.getItem('rapidly_user_phone');
+            if (savedName) document.getElementById('clientNameInput').value = savedName;
+            if (savedPhone) document.getElementById('clientPhoneInput').value = savedPhone;
+        }
+
+        function loadSavedDriver() {
+            const savedDName = localStorage.getItem('rapidly_driver_name');
+            const savedDPhone = localStorage.getItem('rapidly_driver_phone');
+            const savedDCar = localStorage.getItem('rapidly_driver_car');
+            if (savedDName) document.getElementById('driverNameInput').value = savedDName;
+            if (savedDPhone) document.getElementById('driverPhoneInput').value = savedDPhone;
+            if (savedDCar) document.getElementById('driverCarInput').value = savedDCar;
+        }
+
+        function saveDriverProfile() {
+            const dName = document.getElementById('driverNameInput').value.trim();
+            const dPhone = document.getElementById('driverPhoneInput').value.trim();
+            const dCar = document.getElementById('driverCarInput').value.trim();
+
+            if (!dName || !dPhone || !dCar) { alert("Remplissez tous les champs."); return; }
+            localStorage.setItem('rapidly_driver_name', dName);
+            localStorage.setItem('rapidly_driver_phone', dPhone);
+            localStorage.setItem('rapidly_driver_car', dCar);
+            alert("✅ Profil enregistré !");
+            renderDriverOrders();
+        }
+
+        function openProfileModal() {
+            const name = localStorage.getItem('rapidly_user_name') || 'Non renseigné';
+            const phone = localStorage.getItem('rapidly_user_phone') || 'Non renseigné';
+            alert(`Profil : ${name} (${phone})`);
+        }
+
+        function goToHome() {
+            currentActiveOrderId = null;
+            document.getElementById('orderSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.remove('flex');
+            document.getElementById('passengerWaitingSheet').classList.add('hidden');
+            document.getElementById('passengerWaitingSheet').classList.remove('flex');
+            document.getElementById('passengerTrackingSheet').classList.add('hidden');
+            document.getElementById('passengerTrackingSheet').classList.remove('flex');
+            document.getElementById('driverSheet').classList.add('hidden');
+            document.getElementById('driverSheet').classList.remove('flex');
+            document.getElementById('homeSheet').classList.remove('hidden');
+            document.getElementById('mapRouteBadge').classList.add('hidden');
+            document.getElementById('mapRouteBadge').classList.remove('flex');
+            document.getElementById('gpsStatusPill').classList.remove('hidden');
+
+            if (userRole === 'conducteur') toggleUserRole();
+            if (driverLiveMarker && map) { map.removeLayer(driverLiveMarker); driverLiveMarker = null; }
+            if (routeLine && map) { map.removeLayer(routeLine); routeLine = null; }
+            if (destMarker && map) { map.removeLayer(destMarker); destMarker = null; }
+            locateUserExactPosition(true);
+            if (map) setTimeout(() => map.invalidateSize(), 150);
+        }
+
+        function initMap() {
+            if (map) return;
+            const defaultDakar = [14.7088, -17.4741];
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView(defaultDakar, 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+            const userIcon = L.divIcon({
+                html: '<div class="gps-user-dot" style="background:#10B981; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(16,185,129,0.9);"></div>'
+            });
+            userMarker = L.marker(defaultDakar, { icon: userIcon }).addTo(map);
+
+            [100, 300, 800].forEach(d => setTimeout(() => { if (map) map.invalidateSize(); }, d));
+        }
+
+        function locateUserExactPosition(forceCenter = false) {
+            const labelEl = document.getElementById('gpsAddressLabel');
+            const subEl = document.getElementById('homeCurrentPosSub');
+
+            if (currentGpsLocation) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
+                if (labelEl) labelEl.innerText = `📍 ${currentGpsLocation.name}`;
+                if (subEl) subEl.innerText = `Départ : ${currentGpsLocation.name}`;
+            }
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        if (map && userMarker) {
+                            userMarker.setLatLng([lat, lng]);
+                            if (forceCenter) map.setView([lat, lng], 16);
+                        }
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`)
+                            .then(res => res.json())
+                            .then(data => {
+                                let formattedAddr = `GPS (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+                                if (data && data.address) {
+                                    const addr = data.address;
+                                    const road = addr.road || addr.residential || "";
+                                    const suburb = addr.suburb || addr.neighbourhood || "";
+                                    const parts = [road, suburb, "Dakar"].filter(Boolean);
+                                    if (parts.length > 0) formattedAddr = parts.slice(0, 2).join(', ');
+                                }
+                                currentGpsLocation = { name: formattedAddr, lat: lat, lng: lng };
+                                selectedDepartObj = currentGpsLocation;
+                                document.getElementById('orderDepartInput').value = formattedAddr;
+                                if (labelEl) labelEl.innerText = `📍 ${formattedAddr}`;
+                                if (subEl) subEl.innerText = `Départ : ${formattedAddr}`;
+                            }).catch(() => {});
+                    }, () => {}, { enableHighAccuracy: true, timeout: 5000 }
+                );
+            }
+        }
+
+        function normalizeStr(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, " ");
+        }
+
+        function handleAddressInput(field) {
+            const inputEl = field === 'depart' ? document.getElementById('orderDepartInput') : document.getElementById('orderDestInput');
+            const sugBox = field === 'depart' ? document.getElementById('departSuggestions') : document.getElementById('destSuggestions');
+            const query = normalizeStr(inputEl.value.trim());
+
+            if (!query) { sugBox.classList.add('hidden'); return; }
+
+            const matches = SENEGAL_LOCATIONS.filter(loc => normalizeStr(loc.name).includes(query) || normalizeStr(loc.zone).includes(query));
+            sugBox.innerHTML = '';
+
+            if (field === 'depart' && currentGpsLocation) {
+                const gpsDiv = document.createElement('div');
+                gpsDiv.className = "p-2 bg-emerald-50 hover:bg-emerald-100 cursor-pointer flex justify-between items-center text-xs font-bold text-emerald-800";
+                gpsDiv.innerHTML = `<span>📍 Ma position GPS exacte</span>`;
+                gpsDiv.onclick = () => { selectLocation('depart', currentGpsLocation); sugBox.classList.add('hidden'); };
+                sugBox.appendChild(gpsDiv);
+            }
+
+            matches.slice(0, 5).forEach(loc => {
+                const div = document.createElement('div');
+                div.className = "p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center text-xs";
+                div.innerHTML = `<span class="font-bold text-gray-800">${loc.name}</span><span class="text-[9px] text-gray-500">${loc.zone}</span>`;
+                div.onclick = () => { selectLocation(field, loc); sugBox.classList.add('hidden'); };
+                sugBox.appendChild(div);
+            });
+            sugBox.classList.remove('hidden');
+
+            if (matches.length > 0) {
+                if (field === 'depart') selectedDepartObj = matches[0];
+                else selectedDestObj = matches[0];
+                recalculateDynamicFare();
+            }
+        }
+
+        function selectLocation(field, locObj) {
+            if (field === 'depart') {
+                selectedDepartObj = locObj;
+                document.getElementById('orderDepartInput').value = locObj.name;
+            } else {
+                selectedDestObj = locObj;
+                document.getElementById('orderDestInput').value = locObj.name;
+            }
+            recalculateDynamicFare();
+        }
+
+        function recalculateDynamicFare() {
+            if (!selectedDepartObj || !selectedDestObj) return;
+            const R = 6371;
+            const dLat = (selectedDestObj.lat - selectedDepartObj.lat) * Math.PI / 180;
+            const dLon = (selectedDestObj.lng - selectedDepartObj.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(selectedDepartObj.lat * Math.PI / 180) * Math.cos(selectedDestObj.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distKm = Math.max(1.2, (R * c * 1.25)).toFixed(1);
+
+            let basePrice = 1000, kmRate = 220;
+            if (selectedService === 'livraison') { basePrice = 800; kmRate = 130; }
+            else if (selectedService === 'regions') { basePrice = 3000; kmRate = 250; }
+            else if (selectedService === 'fret') { basePrice = 8000; kmRate = 900; }
+
+            let calculated = Math.round((basePrice + parseFloat(distKm) * kmRate) / 100) * 100;
+            currentPrice = Math.max(1000, calculated);
+
+            document.getElementById('priceVal').innerText = currentPrice.toLocaleString('fr-FR');
+            document.getElementById('distanceCalcInfo').innerText = `Distance estimée : ${distKm} km`;
+
+            drawRouteOnMap([selectedDepartObj.lat, selectedDepartObj.lng], [selectedDestObj.lat, selectedDestObj.lng]);
+        }
+
+        function drawRouteOnMap(startCoords, endCoords) {
+            if (!map) return;
+            if (userMarker) map.removeLayer(userMarker);
+            if (destMarker) map.removeLayer(destMarker);
+            if (routeLine) map.removeLayer(routeLine);
+
+            userMarker = L.marker(startCoords, { icon: L.divIcon({ html: '<div class="gps-user-dot" style="background:#10B981; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>' }) }).addTo(map);
+            destMarker = L.marker(endCoords, { icon: L.divIcon({ html: '<div style="background:#E50914; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>' }) }).addTo(map);
+            routeLine = L.polyline([startCoords, endCoords], { color: '#E50914', weight: 4, dashArray: '5, 5' }).addTo(map);
+            map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+            document.getElementById('gpsStatusPill').classList.add('hidden');
+        }
+
+        function openOrderModal(serviceType) {
+            selectedService = serviceType;
+            if (currentGpsLocation && !document.getElementById('orderDepartInput').value) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
+            }
+            document.getElementById('homeSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.remove('hidden');
+            document.getElementById('orderSheet').classList.add('flex');
+            if (selectedDepartObj && selectedDestObj) recalculateDynamicFare();
+            if (map) setTimeout(() => map.invalidateSize(), 150);
+        }
+
+        function quickSelectFromCurrentPos(destQuery) {
+            if (currentGpsLocation) {
+                selectedDepartObj = currentGpsLocation;
+                document.getElementById('orderDepartInput').value = currentGpsLocation.name;
+            }
+            const dest = SENEGAL_LOCATIONS.find(l => normalizeStr(l.name).includes(normalizeStr(destQuery)));
+            if (dest) {
+                selectedDestObj = dest;
+                document.getElementById('orderDestInput').value = dest.name;
+            }
+            openOrderModal('ville');
+        }
+
+        function launchSearch() {
+            const depName = document.getElementById('orderDepartInput').value.trim();
+            const destName = document.getElementById('orderDestInput').value.trim();
+            const clientName = document.getElementById('clientNameInput').value.trim();
+            const clientPhone = document.getElementById('clientPhoneInput').value.trim();
+
+            if (!depName || !destName) { alert("Renseignez le départ et l'arrivée."); return; }
+            if (!clientName || !clientPhone) { alert("Entrez votre nom et téléphone."); return; }
+
+            localStorage.setItem('rapidly_user_name', clientName);
+            localStorage.setItem('rapidly_user_phone', clientPhone);
+
+            const newOrder = {
+                id: Date.now(),
+                createdAt: Date.now(),
+                clientName: clientName,
+                clientPhone: clientPhone,
+                depart: depName,
+                destination: destName,
+                price: currentPrice,
+                service: selectedService.toUpperCase(),
+                status: 'pending'
+            };
+
+            currentActiveOrderId = newOrder.id;
+            activeRealOrders.unshift(newOrder);
+            renderDriverOrders();
+            if (window.publishOrderToCloud) window.publishOrderToCloud(newOrder);
+
+            document.getElementById('orderSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.remove('flex');
+            document.getElementById('passengerWaitingSheet').classList.remove('hidden');
+            document.getElementById('passengerWaitingSheet').classList.add('flex');
+            document.getElementById('waitRouteSummary').innerText = `${depName} ➔ ${destName}`;
+            document.getElementById('waitPriceSummary').innerText = `${currentPrice.toLocaleString('fr-FR')} FCFA`;
+        }
+
+        function simulateDemoDriverAccept() {
+            if (activeRealOrders.length > 0) {
+                const latestOrder = activeRealOrders[0];
+                latestOrder.driverName = "Moussa Ndiaye";
+                latestOrder.driverPhone = "+221 77 450 12 34";
+                latestOrder.driverCar = "Peugeot 301 • DK-4820-AP";
+                latestOrder.status = 'accepted';
+                triggerPassengerTrackingView(latestOrder);
+            } else {
+                alert("Lancez d'abord une commande !");
+            }
+        }
+
+        function triggerPassengerTrackingView(order) {
+            document.getElementById('passengerWaitingSheet').classList.add('hidden');
+            document.getElementById('passengerWaitingSheet').classList.remove('flex');
+            document.getElementById('homeSheet').classList.add('hidden');
+            document.getElementById('orderSheet').classList.add('hidden');
+            document.getElementById('passengerTrackingSheet').classList.remove('hidden');
+            document.getElementById('passengerTrackingSheet').classList.add('flex');
+
+            document.getElementById('trackDriverName').innerText = order.driverName || "Chauffeur";
+            document.getElementById('trackDriverCar').innerText = order.driverCar || "Véhicule";
+            document.getElementById('trackDriverPhoneBtn').href = `tel:${order.driverPhone || '770000000'}`;
+
+            const badge = document.getElementById('mapRouteBadge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+            document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en route vers vous...";
+        }
+
+        function renderDriverOrders() {
+            const container = document.getElementById('driverWorkflowContainer');
+            if (!container) return;
+
+            const driverName = localStorage.getItem('rapidly_driver_name');
+            const driverPhone = localStorage.getItem('rapidly_driver_phone');
+            const driverCar = localStorage.getItem('rapidly_driver_car');
+
+            if (!driverName || !driverPhone || !driverCar) {
+                container.innerHTML = `<div class="bg-amber-50 border border-amber-300 p-3 rounded-xl text-center text-xs text-amber-800 font-bold">⚠️ Enregistrez vos infos professionnelles ci-dessus pour voir les courses.</div>`;
+                return;
+            }
+
+            if (activeRealOrders.length === 0) {
+                container.innerHTML = `<div class="bg-gray-50 p-4 rounded-xl text-center text-xs text-gray-500">En attente de commandes...</div>`;
+                return;
+            }
+
+            let html = ``;
+            activeRealOrders.forEach(order => {
+                if (order.status === 'accepted') {
+                    html += `
+                        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-2 text-xs">
+                            <div class="flex justify-between font-bold text-emerald-800"><span>Course Acceptée</span><span>${order.price} FCFA</span></div>
+                            <div>Client : ${order.clientName}</div>
+                            <button onclick="completeRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-gray-900 text-white py-2 rounded-lg font-bold">Terminer</button>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl space-y-2 text-xs">
+                            <div class="flex justify-between font-bold"><span>${order.clientName}</span><span class="text-rapidlyRed">${order.price} FCFA</span></div>
+                            <div class="text-[11px] text-gray-500">${order.depart} &rarr; ${order.destination}</div>
+                            <button onclick="acceptRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-rapidlyRed text-white py-2 rounded-lg font-bold">Accepter la course</button>
+                        </div>
+                    `;
+                }
+            });
+            container.innerHTML = html;
+        }
+
+        function acceptRealOrder(orderId, docId) {
+            const driverName = localStorage.getItem('rapidly_driver_name');
+            const driverPhone = localStorage.getItem('rapidly_driver_phone');
+            const driverCar = localStorage.getItem('rapidly_driver_car');
+
+            if (!driverName || !driverPhone || !driverCar) {
+                alert("Veuillez d'abord sauvegarder vos infos conducteur !");
+                return;
+            }
+
+            const order = activeRealOrders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'accepted';
+                order.driverName = driverName;
+                order.driverPhone = driverPhone;
+                order.driverCar = driverCar;
+                renderDriverOrders();
+                if (window.updateOrderStatusInCloud) {
+                    window.updateOrderStatusInCloud(orderId, 'accepted', docId || null, { driverName, driverPhone, driverCar });
+                }
+                alert("Course acceptée !");
+            }
+        }
+
+        function completeRealOrder(orderId, docId) {
+            activeRealOrders = activeRealOrders.filter(o => o.id !== orderId);
+            renderDriverOrders();
+            if (window.updateOrderStatusInCloud) {
+                window.updateOrderStatusInCloud(orderId, 'completed', docId || null);
+            }
+            alert("Course terminée !");
+        }
+
+        function toggleUserRole() {
+            userRole = userRole === 'passager' ? 'conducteur' : 'passager';
+            const btnText = document.getElementById('modeBtnText');
+
+            if (userRole === 'conducteur') {
+                btnText.innerText = 'Passager';
+                document.getElementById('homeSheet').classList.add('hidden');
+                document.getElementById('orderSheet').classList.add('hidden');
+                document.getElementById('passengerWaitingSheet').classList.add('hidden');
+                document.getElementById('passengerTrackingSheet').classList.add('hidden');
+                document.getElementById('driverSheet').classList.remove('hidden');
+                document.getElementById('driverSheet').classList.add('flex');
+                renderDriverOrders();
+            } else {
+                btnText.innerText = 'Chauffeur';
+                document.getElementById('driverSheet').classList.add('hidden');
+                document.getElementById('driverSheet').classList.remove('flex');
+                document.getElementById('homeSheet').classList.remove('hidden');
+            }
+            if (map) setTimeout(() => map.invalidateSize(), 150);
+        }
+    </script>
 </body>
 </html>
