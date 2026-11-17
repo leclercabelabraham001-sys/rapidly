@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <!-- Anti-cache strict -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -34,19 +34,23 @@
             color: #111827;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             touch-action: manipulation;
-            user-select: none;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
         #map {
             width: 100%;
             height: 100%;
-            background-color: #E5E7EB;
+            position: absolute;
+            top: 0;
+            left: 0;
             z-index: 1;
+            background-color: #E5E7EB;
         }
         .leaflet-control-zoom, .leaflet-control-attribution { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .shadow-yango { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04); }
+        .shadow-yango { box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.12); }
         .shadow-card { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05); }
 
         @keyframes gps-pulse {
@@ -62,11 +66,13 @@
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased">
 
-    <div class="max-w-md mx-auto h-screen bg-gray-100 flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
+    <div class="max-w-md mx-auto h-screen bg-transparent flex flex-col relative shadow-2xl overflow-hidden border-x border-gray-200">
         
-        <!-- HEADER ÉPURÉ ET NON COUPÉ -->
-        <header class="absolute top-0 left-0 right-0 p-3 z-30 flex justify-between items-center pointer-events-none bg-gradient-to-b from-black/40 via-black/10 to-transparent">
-            <!-- Boutons Gauche (Accueil & Profil) -->
+        <!-- CARTE LEAFLET PLEIN ÉCRAN (Z-INDEX 1) -->
+        <div id="map"></div>
+
+        <!-- HEADER ÉPURÉ FLOTTANT AU-DESSUS DE LA CARTE -->
+        <header class="absolute top-0 left-0 right-0 p-3 z-30 flex justify-between items-center pointer-events-none">
             <div class="flex items-center gap-1.5 pointer-events-auto">
                 <button onclick="goToHome()" class="w-9 h-9 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center shadow-md active:scale-95 transition text-gray-800" title="Retour Accueil">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -76,8 +82,7 @@
                 </button>
             </div>
 
-            <!-- Logo Central -->
-            <div class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md py-1 px-2.5 rounded-xl border border-gray-200 shadow-md">
+            <div class="pointer-events-auto flex items-center gap-1.5 bg-white/95 backdrop-blur-md py-1 px-3 rounded-xl border border-gray-200 shadow-md">
                 <div class="w-5 h-5 rounded bg-rapidlyRed flex items-center justify-center p-0.5 shrink-0">
                     <svg viewBox="0 0 100 100" class="w-full h-full">
                         <path d="M 22,12 L 58,12 C 78,12 88,23 88,38 C 88,50 78,60 62,61 L 88,88 L 66,88 L 44,62 L 40,62 L 40,88 L 22,88 Z M 40,30 L 40,46 L 55,46 C 64,46 70,42 70,38 C 70,33 64,30 55,30 Z" fill="#FFFFFF" />
@@ -86,39 +91,38 @@
                 <span class="font-black text-xs tracking-tight text-gray-900">RAPIDLY</span>
             </div>
 
-            <!-- Bouton Espace Chauffeur (Bien visible) -->
             <button id="modeToggleBtn" onclick="toggleUserRole()" class="pointer-events-auto bg-rapidlyRed hover:bg-rapidlyRedDark active:scale-95 text-white text-[11px] px-3 py-2 rounded-xl font-bold shadow-lg transition shrink-0">
                 <span id="modeBtnText">Chauffeur</span>
             </button>
         </header>
 
-        <!-- CARTE CLAIRE INTERACTIVE AVEC HAUTEUR GARANTIE -->
-        <div class="relative w-full h-[42vh] shrink-0">
-            <div id="map"></div>
-
-            <div id="gpsStatusPill" class="absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2 px-3 rounded-xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-md">
-                <div class="flex items-center gap-2 truncate pr-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                    <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Dakar (Mermoz / Centre)</span>
-                </div>
-                <span class="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
+        <!-- BANDEAUX D'ÉTAT FLOTTANTS SUR LA CARTE -->
+        <div id="gpsStatusPill" class="absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2 px-3 rounded-xl border border-gray-200 flex justify-between items-center text-gray-900 shadow-md pointer-events-none">
+            <div class="flex items-center gap-2 truncate pr-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                <span id="gpsAddressLabel" class="truncate font-bold text-xs text-gray-800">Dakar (Mermoz / Centre)</span>
             </div>
-
-            <div id="mapRouteBadge" class="hidden absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-gray-200 justify-between items-center text-gray-900 shadow-md">
-                <div class="flex items-center gap-2 truncate pr-2">
-                    <span class="w-2 h-2 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
-                    <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route...</span>
-                </div>
-                <span id="routeDistanceText" class="font-extrabold text-[11px] text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full shrink-0">En route</span>
-            </div>
-
-            <button onclick="locateUserExactPosition(true)" title="Ma position" class="absolute right-3 bottom-3 z-20 w-10 h-10 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-md active:scale-95 transition">
-                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </button>
+            <span class="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">GPS LIVE</span>
         </div>
 
+        <div id="mapRouteBadge" class="hidden absolute top-16 left-3 right-3 z-20 bg-white/95 backdrop-blur-md p-2.5 rounded-xl border border-gray-200 justify-between items-center text-gray-900 shadow-md pointer-events-none">
+            <div class="flex items-center gap-2 truncate pr-2">
+                <span class="w-2 h-2 rounded-full bg-rapidlyRed animate-ping shrink-0"></span>
+                <span id="routeBadgeText" class="truncate font-bold text-xs text-gray-800">Chauffeur en route vers vous...</span>
+            </div>
+            <span id="routeDistanceText" class="font-extrabold text-[11px] text-rapidlyRed bg-rapidlyRed/10 px-2 py-0.5 rounded-full shrink-0">En route</span>
+        </div>
+
+        <!-- Bouton Recentrer GPS -->
+        <button onclick="locateUserExactPosition(true)" title="Ma position" class="absolute right-3 bottom-44 z-20 w-10 h-10 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 flex items-center justify-center text-gray-800 shadow-md active:scale-95 transition">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </button>
+
+
+        <!-- ================= PANNEAUX INFERIEURS FLOTTANTS ================= -->
+
         <!-- 1. PAGE D'ACCUEIL PASSAGER -->
-        <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl p-4 flex flex-col gap-3 shadow-yango border-t border-gray-200 flex-1">
+        <div id="homeSheet" class="absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-4 flex flex-col gap-3 shadow-yango border-t border-gray-200">
             <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto -mt-1"></div>
 
             <div onclick="openOrderModal('ville')" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition shadow-card">
@@ -248,11 +252,11 @@
                 <div class="flex justify-between"><span class="text-gray-400">Trajet :</span><strong class="text-gray-900 truncate" id="waitRouteSummary">...</strong></div>
                 <div class="flex justify-between"><span class="text-gray-400">Tarif :</span><strong class="text-rapidlyRed" id="waitPriceSummary">...</strong></div>
             </div>
-            <button onclick="simulateDemoDriverAccept()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs uppercase shadow-md transition">
+            <button onclick="simulateDemoDriverAccept()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs uppercase shadow-md transition">
                 ⚡ [Mode Démo] Simuler l'acceptation Chauffeur
             </button>
             <button onclick="goToHome()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl text-xs uppercase transition">
-                Annuler
+                Annuler la course
             </button>
         </div>
 
@@ -273,7 +277,7 @@
         </div>
 
         <!-- 5. ESPACE CHAUFFEUR -->
-        <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-4 flex-col gap-3 shadow-yango border-t border-gray-200 max-h-[85vh] overflow-y-auto flex-1">
+        <div id="driverSheet" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl p-4 flex-col gap-3 shadow-yango border-t border-gray-200 max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-200">
                 <div>
                     <h4 class="font-extrabold text-xs text-gray-900">Espace Chauffeur RAPIDLY</h4>
@@ -293,6 +297,27 @@
             </div>
 
             <div id="driverWorkflowContainer" class="flex flex-col gap-2"></div>
+        </div>
+
+        <!-- 6. MODAL PROFIL CLIENT -->
+        <div id="profileModal" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <h3 class="font-black text-sm text-gray-900">Mon Profil Passager</h3>
+                    <button onclick="closeProfileModal()" class="p-1 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200">✕</button>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-extrabold text-gray-400 uppercase block">Nom complet</label>
+                        <input type="text" id="modalClientName" placeholder="Ex: Abel Leclerc" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 mt-1">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-extrabold text-gray-400 uppercase block">Numéro de téléphone</label>
+                        <input type="tel" id="modalClientPhone" placeholder="77 000 00 00" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 mt-1">
+                    </div>
+                </div>
+                <button onclick="saveProfileModal()" class="w-full bg-rapidlyRed hover:bg-rapidlyRedDark text-white font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider">Enregistrer mon profil</button>
+            </div>
         </div>
 
     </div>
@@ -375,8 +400,6 @@
                                 existing.driverName = payload.driverName;
                                 existing.driverPhone = payload.driverPhone;
                                 existing.driverCar = payload.driverCar;
-                                existing.driverLat = payload.driverLat;
-                                existing.driverLng = payload.driverLng;
                                 ordersMap.set(payload.orderId, existing);
                             } else if (payload.type === 'COMPLETE_ORDER') {
                                 ordersMap.delete(payload.orderId);
@@ -399,9 +422,7 @@
             setInterval(fetchNtfyHistory, 2500);
         }
 
-        window.forceRefreshCloudOrders = function() {
-            fetchNtfyHistory();
-        };
+        window.forceRefreshCloudOrders = function() { fetchNtfyHistory(); };
 
         window.publishOrderToCloud = async function(orderObj) {
             if (useCloudFirestore && db && currentUser) {
@@ -410,10 +431,7 @@
                 return;
             }
             try {
-                await fetch(NTFY_BASE, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'NEW_ORDER', order: orderObj })
-                });
+                await fetch(NTFY_BASE, { method: 'POST', body: JSON.stringify({ type: 'NEW_ORDER', order: orderObj }) });
             } catch (e) {}
         };
 
@@ -427,11 +445,7 @@
             try {
                 let eventType = 'ACCEPT_ORDER';
                 if (newStatus === 'completed') eventType = 'COMPLETE_ORDER';
-
-                await fetch(NTFY_BASE, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: eventType, orderId: orderId, status: newStatus, ...extraData })
-                });
+                await fetch(NTFY_BASE, { method: 'POST', body: JSON.stringify({ type: eventType, orderId: orderId, status: newStatus, ...extraData }) });
             } catch (e) {}
         };
 
@@ -449,7 +463,7 @@
         let selectedDestObj = null;
         let activeRealOrders = [];
         let currentActiveOrderId = null;
-        let driverGpsBroadcastInterval = null;
+        let demoAnimationTimer = null;
 
         window.syncIncomingOrdersFromCloud = function(cloudOrders) {
             if (!Array.isArray(cloudOrders)) return;
@@ -530,18 +544,35 @@
             localStorage.setItem('rapidly_driver_name', dName);
             localStorage.setItem('rapidly_driver_phone', dPhone);
             localStorage.setItem('rapidly_driver_car', dCar);
-            alert("✅ Profil enregistré !");
+            alert("✅ Profil conducteur enregistré !");
             renderDriverOrders();
         }
 
         function openProfileModal() {
-            const name = localStorage.getItem('rapidly_user_name') || 'Non renseigné';
-            const phone = localStorage.getItem('rapidly_user_phone') || 'Non renseigné';
-            alert(`Profil : ${name} (${phone})`);
+            document.getElementById('modalClientName').value = localStorage.getItem('rapidly_user_name') || '';
+            document.getElementById('modalClientPhone').value = localStorage.getItem('rapidly_user_phone') || '';
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveProfileModal() {
+            const name = document.getElementById('modalClientName').value.trim();
+            const phone = document.getElementById('modalClientPhone').value.trim();
+            if (!name || !phone) { alert("Entrez votre nom et téléphone."); return; }
+            localStorage.setItem('rapidly_user_name', name);
+            localStorage.setItem('rapidly_user_phone', phone);
+            document.getElementById('clientNameInput').value = name;
+            document.getElementById('clientPhoneInput').value = phone;
+            closeProfileModal();
+            alert("✅ Profil enregistré !");
         }
 
         function goToHome() {
             currentActiveOrderId = null;
+            if (demoAnimationTimer) clearInterval(demoAnimationTimer);
             document.getElementById('orderSheet').classList.add('hidden');
             document.getElementById('orderSheet').classList.remove('flex');
             document.getElementById('passengerWaitingSheet').classList.add('hidden');
@@ -700,7 +731,7 @@
             userMarker = L.marker(startCoords, { icon: L.divIcon({ html: '<div class="gps-user-dot" style="background:#10B981; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>' }) }).addTo(map);
             destMarker = L.marker(endCoords, { icon: L.divIcon({ html: '<div style="background:#E50914; width:14px; height:14px; border-radius:50%; border:2px solid white;"></div>' }) }).addTo(map);
             routeLine = L.polyline([startCoords, endCoords], { color: '#E50914', weight: 4, dashArray: '5, 5' }).addTo(map);
-            map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
             document.getElementById('gpsStatusPill').classList.add('hidden');
         }
 
@@ -776,7 +807,21 @@
                 latestOrder.status = 'accepted';
                 triggerPassengerTrackingView(latestOrder);
             } else {
-                alert("Lancez d'abord une commande !");
+                // Créer une course fictive pour la démo si aucune n'est active
+                const demoOrder = {
+                    id: Date.now(),
+                    clientName: localStorage.getItem('rapidly_user_name') || 'Abel Leclerc',
+                    clientPhone: localStorage.getItem('rapidly_user_phone') || '77 123 45 67',
+                    depart: selectedDepartObj ? selectedDepartObj.name : 'Mermoz Pyrotechnie',
+                    destination: selectedDestObj ? selectedDestObj.name : 'Dakar Plateau',
+                    price: currentPrice,
+                    status: 'accepted',
+                    driverName: "Moussa Ndiaye",
+                    driverPhone: "+221 77 450 12 34",
+                    driverCar: "Peugeot 301 • DK-4820-AP"
+                };
+                currentActiveOrderId = demoOrder.id;
+                triggerPassengerTrackingView(demoOrder);
             }
         }
 
@@ -788,14 +833,49 @@
             document.getElementById('passengerTrackingSheet').classList.remove('hidden');
             document.getElementById('passengerTrackingSheet').classList.add('flex');
 
-            document.getElementById('trackDriverName').innerText = order.driverName || "Chauffeur";
-            document.getElementById('trackDriverCar').innerText = order.driverCar || "Véhicule";
-            document.getElementById('trackDriverPhoneBtn').href = `tel:${order.driverPhone || '770000000'}`;
+            document.getElementById('trackDriverName').innerText = order.driverName || "Moussa Ndiaye";
+            document.getElementById('trackDriverCar').innerText = order.driverCar || "Peugeot 301 • DK-4820-AP";
+            document.getElementById('trackDriverPhoneBtn').href = `tel:${order.driverPhone || '774501234'}`;
 
             const badge = document.getElementById('mapRouteBadge');
             badge.classList.remove('hidden');
             badge.classList.add('flex');
-            document.getElementById('routeBadgeText').innerText = "🚖 Chauffeur en route vers vous...";
+            document.getElementById('routeBadgeText').innerText = "🚖 Moussa est en route vers vous...";
+
+            // Animation du véhicule sur la carte en mode démo
+            if (map && selectedDepartObj && selectedDestObj) {
+                if (driverLiveMarker) map.removeLayer(driverLiveMarker);
+                
+                // Position de départ éloignée pour simuler l'approche
+                let driverLat = selectedDepartObj.lat + 0.012;
+                let driverLng = selectedDepartObj.lng + 0.012;
+
+                const carIcon = L.divIcon({
+                    html: '<div style="background:#E50914; color:white; width:28px; height:28px; border-radius:50%; border:3px solid white; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow:0 0 12px rgba(229,9,20,0.9);">🚖</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+
+                driverLiveMarker = L.marker([driverLat, driverLng], { icon: carIcon }).addTo(map);
+
+                let step = 0;
+                const totalSteps = 40;
+                const startLat = driverLat, startLng = driverLng;
+                const targetLat = selectedDepartObj.lat, targetLng = selectedDepartObj.lng;
+
+                if (demoAnimationTimer) clearInterval(demoAnimationTimer);
+                demoAnimationTimer = setInterval(() => {
+                    step++;
+                    const currLat = startLat + (targetLat - startLat) * (step / totalSteps);
+                    const currLng = startLng + (targetLng - startLng) * (step / totalSteps);
+                    if (driverLiveMarker) driverLiveMarker.setLatLng([currLat, currLng]);
+
+                    if (step >= totalSteps) {
+                        clearInterval(demoAnimationTimer);
+                        document.getElementById('routeBadgeText').innerText = "✅ Votre chauffeur est arrivé au point de départ !";
+                    }
+                }, 400);
+            }
         }
 
         function renderDriverOrders() {
@@ -822,8 +902,8 @@
                     html += `
                         <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-2 text-xs">
                             <div class="flex justify-between font-bold text-emerald-800"><span>Course Acceptée</span><span>${order.price} FCFA</span></div>
-                            <div>Client : ${order.clientName}</div>
-                            <button onclick="completeRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-gray-900 text-white py-2 rounded-lg font-bold">Terminer</button>
+                            <div>Client : ${order.clientName} (${order.clientPhone})</div>
+                            <button onclick="completeRealOrder(${order.id}, '${order.docId || ''}')" class="w-full bg-gray-900 text-white py-2 rounded-lg font-bold">Terminer la course</button>
                         </div>
                     `;
                 } else {
